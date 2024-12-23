@@ -108,7 +108,7 @@ export function SharedAgentHours() {
     <div className="container mx-auto py-8 relative">
       {accepted && (
         <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50 overflow-hidden">
-          <div className="transform rotate-[-35deg] text-red-500/20 text-[20vw] font-black whitespace-nowrap select-none">
+          <div className="transform rotate-[-35deg] text-red-500/20 text-[40vw] font-black whitespace-nowrap select-none">
             PAID
           </div>
         </div>
@@ -126,11 +126,11 @@ export function SharedAgentHours() {
                   className="h-24 w-24 object-contain mb-4"
                 />
                 <h1 className="text-2xl font-bold">LuckyBird</h1>
-              </div>
-              <div className="text-right">
-                <p className="text-muted-foreground">732 N. Madelia St.</p>
-                <p className="text-muted-foreground">Spokane, WA 99202</p>
-                <p className="text-muted-foreground">+1 (509) 508-2229</p>
+                <div className="text-muted-foreground mt-2">
+                  <p>732 N. Madelia St.</p>
+                  <p>Spokane, WA 99202</p>
+                  <p>+1 (509) 508-2229</p>
+                </div>
               </div>
             </div>
 
