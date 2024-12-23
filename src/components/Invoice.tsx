@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useToast } from "./ui/use-toast";
 import { useParams, useNavigate } from "react-router-dom";
+import { DirectoryEntry } from "@/lib/types";
 
 export function Invoice() {
   const { recordId } = useParams();
@@ -12,7 +13,16 @@ export function Invoice() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [isPaid, setIsPaid] = useState(false);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Load directory data
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
+    }
+  }, []);
 
   useEffect(() => {
     if (!recordId) {
@@ -68,10 +78,24 @@ export function Invoice() {
     );
   }
 
+  // Find directory entry for the current record
+  const getDirectoryInfo = (name: string) => {
+    return directoryData.find(entry => 
+      entry.name.toLowerCase() === name.toLowerCase()
+    );
+  };
+
   return (
     <div className="p-4 space-y-4 relative">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Payroll Invoice</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Payroll Invoice</h1>
+          {directoryData.length > 0 && (
+            <div className="mt-2 text-gray-600">
+              {getDirectoryInfo(recordId?.split('-')[0] || '')?.position}
+            </div>
+          )}
+        </div>
         <p className="text-lg">
           Pay Period: {format(startDate, "PP")} - {format(endDate, "PP")}
         </p>
