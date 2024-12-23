@@ -39,25 +39,29 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
   const handleDeductionsChange = (agentName: string, value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setNetPayData((prev) =>
-      prev.map((data) =>
-        data.agentName === agentName
-          ? { ...data, deductions: numValue }
-          : data
-      )
-    );
+    const numValue = value === '' ? 0 : parseFloat(value);
+    if (!isNaN(numValue)) {
+      setNetPayData((prev) =>
+        prev.map((data) =>
+          data.agentName === agentName
+            ? { ...data, deductions: numValue }
+            : data
+        )
+      );
+    }
   };
 
   const handleReimbursementsChange = (agentName: string, value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setNetPayData((prev) =>
-      prev.map((data) =>
-        data.agentName === agentName
-          ? { ...data, reimbursements: numValue }
-          : data
-      )
-    );
+    const numValue = value === '' ? 0 : parseFloat(value);
+    if (!isNaN(numValue)) {
+      setNetPayData((prev) =>
+        prev.map((data) =>
+          data.agentName === agentName
+            ? { ...data, reimbursements: numValue }
+            : data
+        )
+      );
+    }
   };
 
   const summaryData = TEAM_MEMBERS
