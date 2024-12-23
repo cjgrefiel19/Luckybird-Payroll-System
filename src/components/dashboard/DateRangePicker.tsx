@@ -18,6 +18,11 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PayPeriod } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DateRangePickerProps {
   startDate?: Date;
@@ -53,6 +58,12 @@ export function DateRangePicker({
     }
   };
 
+  const handleDelete = (e: React.MouseEvent, periodId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDeletePayPeriod(periodId);
+  };
+
   return (
     <div className="flex flex-wrap gap-4 items-center">
       <div className="flex-1 min-w-[200px]">
@@ -72,20 +83,27 @@ export function DateRangePicker({
           </SelectTrigger>
           <SelectContent>
             {payPeriods.map((period) => (
-              <SelectItem key={period.id} value={period.id} className="flex items-center justify-between pr-8">
+              <SelectItem 
+                key={period.id} 
+                value={period.id} 
+                className="flex items-center justify-between pr-8"
+              >
                 <span>{period.name}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 ml-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onDeletePayPeriod(period.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 ml-2 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                      onClick={(e) => handleDelete(e, period.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete pay period</p>
+                  </TooltipContent>
+                </Tooltip>
               </SelectItem>
             ))}
           </SelectContent>
