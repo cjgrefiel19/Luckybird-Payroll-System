@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NetPayData, DirectoryEntry, AttendanceEntry } from "@/lib/types";
+import { NetPayData } from "@/lib/types";
 import { calculateTotalEarnings, filterEntriesByDateRange } from "./utils/netPayCalculations";
 import { NetPayCalculatorProps } from "./types/netPay";
 import { NetPayTableRow } from "./NetPayTableRow";
@@ -22,7 +22,6 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
     if (savedNetPayData) {
       setNetPayData(JSON.parse(savedNetPayData));
     } else {
-      // Initialize with team members if no saved data
       const initialData = TEAM_MEMBERS.map((member) => ({
         agentName: member.name,
         deductions: 0,
