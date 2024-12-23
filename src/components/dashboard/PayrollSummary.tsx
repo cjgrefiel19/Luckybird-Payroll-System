@@ -129,33 +129,33 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Agent Name</TableHead>
-              <TableHead className="text-right">Regular Working Hours</TableHead>
-              <TableHead className="text-right">OT Hours</TableHead>
-              <TableHead className="text-right">Hourly Rate</TableHead>
-              <TableHead className="text-right">Paid Leaves</TableHead>
-              <TableHead className="text-right">Unpaid Days</TableHead>
-              <TableHead className="text-right">Total Days</TableHead>
-              <TableHead className="text-right">Total Earnings</TableHead>
+              <TableHead className="text-center">Agent Name</TableHead>
+              <TableHead className="text-center">Regular Working Hours</TableHead>
+              <TableHead className="text-center">OT Hours</TableHead>
+              <TableHead className="text-center">Hourly Rate</TableHead>
+              <TableHead className="text-center">Paid Leaves</TableHead>
+              <TableHead className="text-center">Unpaid Days</TableHead>
+              <TableHead className="text-center">Total Days</TableHead>
+              <TableHead className="text-center">Total Earnings</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {summaryData.map((row) => (
               <TableRow key={row.name}>
-                <TableCell className="font-medium">{row.name}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center font-medium">{row.name}</TableCell>
+                <TableCell className="text-center">
                   {row.regularHours.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   {row.otHours.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   {formatCurrency(row.hourlyRate)}
                 </TableCell>
-                <TableCell className="text-right">{row.paidLeaves}</TableCell>
-                <TableCell className="text-right">{row.unpaidDays}</TableCell>
-                <TableCell className="text-right">{row.totalDays}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">{row.paidLeaves}</TableCell>
+                <TableCell className="text-center">{row.unpaidDays}</TableCell>
+                <TableCell className="text-center">{row.totalDays}</TableCell>
+                <TableCell className="text-center">
                   {formatCurrency(row.totalEarnings)}
                 </TableCell>
               </TableRow>

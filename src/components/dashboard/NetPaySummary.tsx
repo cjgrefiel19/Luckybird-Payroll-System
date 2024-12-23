@@ -119,21 +119,21 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Agent Name</TableHead>
-              <TableHead className="text-right">Total Earnings</TableHead>
-              <TableHead className="text-right">Deductions</TableHead>
-              <TableHead className="text-right">Reimbursements</TableHead>
-              <TableHead className="text-right">Net Pay</TableHead>
+              <TableHead className="text-center">Agent Name</TableHead>
+              <TableHead className="text-center">Total Earnings</TableHead>
+              <TableHead className="text-center">Deductions</TableHead>
+              <TableHead className="text-center">Reimbursements</TableHead>
+              <TableHead className="text-center">Net Pay</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {summaryData.map((row) => (
               <TableRow key={row.name}>
-                <TableCell className="font-medium">{row.name}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center font-medium">{row.name}</TableCell>
+                <TableCell className="text-center">
                   {formatCurrency(row.totalEarnings)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Input
                     type="number"
                     value={
@@ -143,10 +143,10 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
                     onChange={(e) =>
                       handleDeductionsChange(row.name, e.target.value)
                     }
-                    className="w-32 ml-auto"
+                    className="w-32 mx-auto text-center"
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Input
                     type="number"
                     value={
@@ -156,10 +156,10 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
                     onChange={(e) =>
                       handleReimbursementsChange(row.name, e.target.value)
                     }
-                    className="w-32 ml-auto"
+                    className="w-32 mx-auto text-center"
                   />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   {formatCurrency(row.netPay)}
                 </TableCell>
               </TableRow>

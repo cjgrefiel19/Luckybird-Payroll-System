@@ -72,8 +72,20 @@ export function DateRangePicker({
           </SelectTrigger>
           <SelectContent>
             {payPeriods.map((period) => (
-              <SelectItem key={period.id} value={period.id}>
-                {period.name}
+              <SelectItem key={period.id} value={period.id} className="flex items-center justify-between pr-8">
+                <span>{period.name}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 ml-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDeletePayPeriod(period.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </SelectItem>
             ))}
           </SelectContent>
@@ -155,16 +167,6 @@ export function DateRangePicker({
             className="gap-2"
           >
             <Plus className="h-4 w-4" /> Save Period
-          </Button>
-        )}
-
-        {selectedPayPeriod && (
-          <Button
-            variant="outline"
-            onClick={() => onDeletePayPeriod(selectedPayPeriod)}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4" /> Delete Period
           </Button>
         )}
       </div>
