@@ -6,13 +6,15 @@ import { PayPeriod } from "@/lib/types";
 import { useToast } from "./ui/use-toast";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Link } from "lucide-react";
+import { Link, Copy } from "lucide-react";
+import { Input } from "./ui/input";
 
 export function Dashboard() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [payPeriods, setPayPeriods] = useState<PayPeriod[]>([]);
   const [selectedPayPeriod, setSelectedPayPeriod] = useState<string | null>(null);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Load pay periods from localStorage
@@ -98,14 +100,25 @@ export function Dashboard() {
     });
     localStorage.setItem('payrollRecords', JSON.stringify(records));
 
+    // Generate absolute URL
+    const baseUrl = window.location.origin;
+    const fullUrl = baseUrl + invoiceUrl;
+    setGeneratedLink(fullUrl);
+
     toast({
       title: "Success",
       description: "Shareable link generated and saved to Payroll Records",
     });
+  };
 
-    // Open invoice in new tab with absolute URL
-    const baseUrl = window.location.origin;
-    window.open(baseUrl + invoiceUrl, '_blank');
+  const handleCopyLink = () => {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      toast({
+        title: "Success",
+        description: "Link copied to clipboard",
+      });
+    }
   };
 
   return (
@@ -128,11 +141,31 @@ export function Dashboard() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleGenerateLink} className="gap-2">
-          <Link className="h-4 w-4" />
-          Generate Shareable Link
-        </Button>
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <Button onClick={handleGenerateLink} className="gap-2">
+            <Link className="h-4 w-4" />
+            Generate Shareable Link
+          </Button>
+        </div>
+
+        {generatedLink && (
+          <div className="flex gap-2 items-center">
+            <Input
+              value={generatedLink}
+              readOnly
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyLink}
+              className="shrink-0"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       <PayrollSummary startDate={startDate} endDate={endDate} />
