@@ -47,15 +47,15 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
         <div className="space-y-2">
           {uniqueAgents.map((agentName) => {
             const directoryEntry = directoryData.find(entry => 
-              entry.name.toLowerCase().includes(agentName.toLowerCase())
+              entry.name.toLowerCase() === agentName.toLowerCase()
             );
             
             return (
               <button
                 key={agentName}
-                onClick={() => onSelectAgent(directoryEntry?.name || agentName)}
+                onClick={() => onSelectAgent(agentName)}
                 className={`w-full text-left p-3 rounded-lg transition-colors ${
-                  selectedAgent === (directoryEntry?.name || agentName)
+                  selectedAgent === agentName
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted"
                 }`}
