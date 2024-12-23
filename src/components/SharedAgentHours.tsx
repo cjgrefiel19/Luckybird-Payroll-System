@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { Check, FileText } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import html2pdf from 'html2pdf.js';
-import { Badge } from "./ui/badge";
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
@@ -86,11 +85,11 @@ export function SharedAgentHours() {
   const handleDownloadPDF = () => {
     const element = document.getElementById('invoice-content');
     const opt = {
-      margin: 1,
+      margin: 0.5,
       filename: `${agentName}-invoice.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
     };
 
     html2pdf().set(opt).from(element).save().then(() => {
@@ -117,38 +116,42 @@ export function SharedAgentHours() {
       
       <Card>
         <CardContent className="p-6">
-          <div id="invoice-content">
-            {/* Company Details */}
-            <div className="mb-8 text-center border-b pb-4">
-              <h1 className="text-2xl font-bold mb-2">LuckyBird's Payroll</h1>
-              <p className="text-muted-foreground">123 Business Street, Suite 100</p>
-              <p className="text-muted-foreground">Los Angeles, CA 90012</p>
-              <p className="text-muted-foreground">Tel: (555) 123-4567</p>
-              <p className="text-muted-foreground">Email: payroll@luckybird.com</p>
-            </div>
-
-            <div className="mb-6 flex justify-between items-start">
-              <div>
-                <h2 className="text-2xl font-bold">{agentName}</h2>
-                <p className="text-muted-foreground">{position}</p>
+          <div id="invoice-content" className="space-y-8">
+            {/* Header with Logo and Company Details */}
+            <div className="flex items-center justify-between border-b pb-6">
+              <img 
+                src="/lovable-uploads/b677038c-b42f-4e07-98ac-149e8aa47838.png" 
+                alt="LuckyBird's Logo" 
+                className="h-16 object-contain"
+              />
+              <div className="text-right">
+                <h1 className="text-2xl font-bold mb-2">LuckyBird's Payroll</h1>
+                <p className="text-muted-foreground">123 Business Street, Suite 100</p>
+                <p className="text-muted-foreground">Los Angeles, CA 90012</p>
+                <p className="text-muted-foreground">Tel: (555) 123-4567</p>
+                <p className="text-muted-foreground">Email: payroll@luckybird.com</p>
               </div>
-              <Badge variant={accepted ? "success" : "secondary"}>
-                {accepted ? "Accepted" : "Pending"}
-              </Badge>
             </div>
 
-            <div className="space-y-6">
+            {/* Agent Details and Pay Period */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold">{agentName}</h2>
+              <p className="text-muted-foreground">{position}</p>
               {payPeriod && (
-                <div className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Pay Period: {format(payPeriod.start, "PPP")} - {format(payPeriod.end, "PPP")}
-                </div>
+                </p>
               )}
+            </div>
 
-              <div className="bg-muted p-4 rounded-lg mb-4">
-                <h3 className="font-semibold mb-2">Summary</h3>
-                <p>Total Working Hours: {totalHours.toFixed(2)}</p>
-              </div>
+            {/* Summary Box */}
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">Summary</h3>
+              <p>Total Working Hours: {totalHours.toFixed(2)}</p>
+            </div>
 
+            {/* Attendance Table */}
+            <div className="overflow-x-auto">
               <AgentAttendanceTable entries={entries} />
             </div>
           </div>
