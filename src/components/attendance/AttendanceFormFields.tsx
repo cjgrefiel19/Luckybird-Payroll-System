@@ -27,7 +27,7 @@ const formSchema = z.object({
   agentName: z.string(),
   timeIn: z.string(),
   timeOut: z.string(),
-  shiftType: z.string(),
+  shiftType: z.string().default("Regular Shift"),
 });
 
 type FormFields = z.infer<typeof formSchema>;
@@ -42,6 +42,7 @@ export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFiel
     if (selectedAgent) {
       form.setValue("timeIn", selectedAgent.timeIn);
       form.setValue("timeOut", selectedAgent.timeOut);
+      form.setValue("shiftType", "Regular Shift");
     }
   }, [selectedAgent, form]);
 
@@ -94,7 +95,7 @@ export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFiel
         render={({ field }) => (
           <FormItem>
             <FormLabel>Agent Name</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select an agent" />
@@ -146,7 +147,7 @@ export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFiel
         render={({ field }) => (
           <FormItem>
             <FormLabel>Shift Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || "Regular Shift"}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select shift type" />
