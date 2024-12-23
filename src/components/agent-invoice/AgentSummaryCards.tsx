@@ -17,7 +17,10 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
     .reduce((sum, entry) => sum + entry.totalHours, 0);
 
   const holidayHours = filteredEntries
-    .filter(entry => entry.shiftType.includes('Holiday'))
+    .filter(entry => 
+      entry.shiftType.includes('Holiday') || 
+      entry.shiftType.includes('Special')
+    )
     .reduce((sum, entry) => sum + entry.totalHours, 0);
 
   const leaveDays = filteredEntries
@@ -25,7 +28,15 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
     .length;
 
   const totalEarnings = filteredEntries.reduce(
-    (sum, entry) => sum + (entry.totalHours * entry.hourlyRate),
+    (sum, entry) => {
+      let multiplier = 1;
+      if (entry.shiftType === 'Regular OT') multiplier = 1.25;
+      else if (entry.shiftType === 'Rest Day OT') multiplier = 1.30;
+      else if (entry.shiftType === 'Special Holidays') multiplier = 1.30;
+      else if (entry.shiftType === 'Regular Holidays') multiplier = 2.00;
+      
+      return sum + (entry.totalHours * entry.hourlyRate * multiplier);
+    },
     0
   );
 

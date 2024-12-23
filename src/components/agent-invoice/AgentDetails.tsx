@@ -32,18 +32,35 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   }, []);
 
   const filteredEntries = entries.filter((entry) => {
-    if (!startDate || !endDate) return entry.agentName === agentName;
     const entryDate = new Date(entry.date);
-    return (
-      entry.agentName === agentName &&
-      entryDate >= startDate &&
-      entryDate <= endDate
-    );
+    const matchesAgent = entry.agentName.toLowerCase() === agentName.toLowerCase();
+    const withinDateRange = startDate && endDate 
+      ? entryDate >= startDate && entryDate <= endDate
+      : true;
+    return matchesAgent && withinDateRange;
   });
 
   const directoryEntry = directoryData.find(entry => 
-    entry.name.toLowerCase().includes(agentName.toLowerCase())
+    entry.name.toLowerCase() === agentName.toLowerCase()
   );
+
+  if (filteredEntries.length === 0) {
+    return (
+      <Card>
+        <div className="p-6 border-b">
+          <h2 className="text-2xl font-bold">{directoryEntry?.name || agentName}</h2>
+          {directoryEntry && (
+            <p className="text-muted-foreground">{directoryEntry.position}</p>
+          )}
+        </div>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">
+            No attendance records found for this period.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
