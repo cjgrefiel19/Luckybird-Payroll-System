@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TEAM_MEMBERS } from "@/lib/constants";
+import { TEAM_MEMBERS, SHIFT_TYPES } from "@/lib/constants";
 import { AttendanceEntry } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +37,27 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
     return entryDate >= startDate && entryDate <= endDate;
   });
 
+  const calculateTotalEarnings = (
+    regularHours: number,
+    otHoursByType: { [key: string]: number },
+    hourlyRate: number,
+    paidLeaves: number
+  ) => {
+    // Regular hours earnings
+    const regularEarnings = regularHours * hourlyRate;
+
+    // OT hours earnings
+    const otEarnings = Object.entries(otHoursByType).reduce((total, [type, hours]) => {
+      const multiplier = SHIFT_TYPES.find(st => st.type === type)?.multiplier || 1;
+      return total + (hours * hourlyRate * multiplier);
+    }, 0);
+
+    // Paid leaves earnings (8 hours per day)
+    const paidLeaveEarnings = paidLeaves * 8 * hourlyRate;
+
+    return regularEarnings + otEarnings + paidLeaveEarnings;
+  };
+
   const summaryData = TEAM_MEMBERS.map((member) => {
     const memberEntries = filteredEntries.filter(
       (entry) => entry.agentName === member.name
@@ -46,16 +67,22 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
       .filter((entry) => entry.shiftType === "Regular Shift")
       .reduce((sum, entry) => sum + entry.totalHours, 0);
 
-    const otHours = memberEntries
+    // Group OT hours by type
+    const otHoursByType = memberEntries
       .filter((entry) =>
-        [
-          "Regular OT",
-          "Rest Day OT",
-          "Special Holidays",
-          "Regular Holidays",
-        ].includes(entry.shiftType)
+        ["Regular OT", "Rest Day OT", "Special Holidays", "Regular Holidays"].includes(
+          entry.shiftType
+        )
       )
-      .reduce((sum, entry) => sum + entry.totalHours, 0);
+      .reduce((acc, entry) => {
+        acc[entry.shiftType] = (acc[entry.shiftType] || 0) + entry.totalHours;
+        return acc;
+      }, {} as { [key: string]: number });
+
+    const totalOtHours = Object.values(otHoursByType).reduce(
+      (sum, hours) => sum + hours,
+      0
+    );
 
     const paidLeaves = memberEntries.filter((entry) =>
       ["Paid SL", "Paid Leave"].includes(entry.shiftType)
@@ -69,15 +96,17 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
       ["Regular Shift", "Paid SL", "Paid Leave"].includes(entry.shiftType)
     ).length;
 
-    const totalEarnings = memberEntries.reduce(
-      (sum, entry) => sum + entry.dailyEarnings,
-      0
+    const totalEarnings = calculateTotalEarnings(
+      regularHours,
+      otHoursByType,
+      member.hourlyRate,
+      paidLeaves
     );
 
     return {
       name: member.name,
       regularHours,
-      otHours,
+      otHours: totalOtHours,
       hourlyRate: member.hourlyRate,
       paidLeaves,
       unpaidDays,
