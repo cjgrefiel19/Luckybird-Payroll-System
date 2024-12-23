@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AgentAttendanceTable } from "./AgentAttendanceTable";
+import { isWithinInterval } from "date-fns";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -32,17 +33,42 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   }, []);
 
   const filteredEntries = entries.filter((entry) => {
-    const entryDate = new Date(entry.date);
+    // First check if the agent name matches (case-insensitive)
     const matchesAgent = entry.agentName.toLowerCase() === agentName.toLowerCase();
-    const withinDateRange = startDate && endDate 
-      ? entryDate >= startDate && entryDate <= endDate
-      : true;
+    
+    // Then check if the date is within range (if dates are provided)
+    let withinDateRange = true;
+    if (startDate && endDate) {
+      withinDateRange = isWithinInterval(new Date(entry.date), {
+        start: startDate,
+        end: endDate
+      });
+    }
+    
     return matchesAgent && withinDateRange;
-  });
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
 
   const directoryEntry = directoryData.find(entry => 
     entry.name.toLowerCase() === agentName.toLowerCase()
   );
+
+  if (!startDate || !endDate) {
+    return (
+      <Card>
+        <div className="p-6 border-b">
+          <h2 className="text-2xl font-bold">{directoryEntry?.name || agentName}</h2>
+          {directoryEntry && (
+            <p className="text-muted-foreground">{directoryEntry.position}</p>
+          )}
+        </div>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">
+            Please select a date range to view attendance records.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (filteredEntries.length === 0) {
     return (
