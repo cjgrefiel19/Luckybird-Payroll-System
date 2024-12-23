@@ -64,7 +64,11 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
                   {directoryEntry?.name || agentName}
                 </div>
                 {directoryEntry && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className={`text-sm ${
+                    selectedAgent === agentName 
+                      ? "text-primary-foreground/80"
+                      : "text-muted-foreground"
+                  }`}>
                     {directoryEntry.position}
                   </div>
                 )}

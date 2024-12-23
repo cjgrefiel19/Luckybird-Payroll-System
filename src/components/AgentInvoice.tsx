@@ -29,9 +29,7 @@ export function AgentInvoice() {
 
   // Save pay periods to localStorage
   useEffect(() => {
-    if (payPeriods.length > 0) {
-      localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
-    }
+    localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
   }, [payPeriods]);
 
   const handleSavePayPeriod = (name: string) => {
