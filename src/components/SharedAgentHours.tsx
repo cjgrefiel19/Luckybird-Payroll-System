@@ -137,7 +137,7 @@ export function SharedAgentHours() {
             {/* Agent Details and Pay Period */}
             <div className="space-y-2">
               <h2 className="text-2xl font-bold">{agentName}</h2>
-              <p className="text-muted-foreground">{position}</p>
+              <p className="text-lg text-muted-foreground">{position}</p>
               {payPeriod && (
                 <p className="text-sm text-muted-foreground">
                   Pay Period: {format(payPeriod.start, "PPP")} - {format(payPeriod.end, "PPP")}
