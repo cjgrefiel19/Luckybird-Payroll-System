@@ -10,6 +10,8 @@ export function SharedAgentHours() {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [agentName, setAgentName] = useState("");
   const [position, setPosition] = useState("");
+  const [totalHours, setTotalHours] = useState(0);
+  const [payPeriod, setPayPeriod] = useState<{ start: Date; end: Date } | null>(null);
 
   useEffect(() => {
     if (!agentId) return;
@@ -27,6 +29,18 @@ export function SharedAgentHours() {
         const agentFirstName = atob(agentId).split('|')[0].split(' ')[0].toLowerCase();
         return entryFirstName === agentFirstName;
       });
+
+      // Calculate total hours
+      const total = agentEntries.reduce((sum, entry) => sum + entry.totalHours, 0);
+      setTotalHours(total);
+
+      // Find pay period range
+      if (agentEntries.length > 0) {
+        const dates = agentEntries.map(entry => entry.date);
+        const startDate = new Date(Math.min(...dates.map(date => date.getTime())));
+        const endDate = new Date(Math.max(...dates.map(date => date.getTime())));
+        setPayPeriod({ start: startDate, end: endDate });
+      }
 
       setEntries(agentEntries);
     }
@@ -51,8 +65,15 @@ export function SharedAgentHours() {
           </div>
 
           <div className="space-y-6">
-            <div className="text-sm text-muted-foreground">
-              Last updated: {format(new Date(), "PPP")}
+            {payPeriod && (
+              <div className="text-sm text-muted-foreground">
+                Pay Period: {format(payPeriod.start, "PPP")} - {format(payPeriod.end, "PPP")}
+              </div>
+            )}
+
+            <div className="bg-muted p-4 rounded-lg mb-4">
+              <h3 className="font-semibold mb-2">Summary</h3>
+              <p>Total Working Hours: {totalHours.toFixed(2)}</p>
             </div>
 
             <AgentAttendanceTable entries={entries} />
