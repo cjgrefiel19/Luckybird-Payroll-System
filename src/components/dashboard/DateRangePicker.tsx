@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
   Select,
@@ -40,6 +40,7 @@ export function DateRangePicker({
   selectedPayPeriod,
   onPayPeriodSelect,
   onSavePayPeriod,
+  onDeletePayPeriod,
 }: DateRangePickerProps) {
   const [newPayPeriodName, setNewPayPeriodName] = useState("");
   const [showSaveInput, setShowSaveInput] = useState(false);
@@ -50,6 +51,10 @@ export function DateRangePicker({
       setNewPayPeriodName("");
       setShowSaveInput(false);
     }
+  };
+
+  const handleDelete = (periodId: string) => {
+    onDeletePayPeriod(periodId);
   };
 
   return (
@@ -71,12 +76,23 @@ export function DateRangePicker({
           </SelectTrigger>
           <SelectContent>
             {payPeriods.map((period) => (
-              <SelectItem 
-                key={period.id} 
-                value={period.id}
-              >
-                {period.name}
-              </SelectItem>
+              <div key={period.id} className="flex items-center justify-between p-2">
+                <SelectItem 
+                  value={period.id}
+                  className="flex-1"
+                >
+                  {period.name}
+                </SelectItem>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 ml-2 hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => handleDelete(period.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             ))}
           </SelectContent>
         </Select>
