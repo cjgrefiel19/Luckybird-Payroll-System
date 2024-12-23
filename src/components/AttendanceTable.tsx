@@ -42,56 +42,68 @@ export function AttendanceTable({ entries, onEdit, onDelete }: AttendanceTablePr
           </TableRow>
         </TableHeader>
         <TableBody>
-          {entries.map((entry, index) => {
-            const otRate = calculateOTRate(entry.hourlyRate, entry.shiftType);
-            const dailyEarnings = calculateDailyEarnings(
-              entry.hourlyRate,
-              entry.totalHours,
-              entry.shiftType
-            );
-            const otPay = entry.shiftType.includes("OT")
-              ? otRate * entry.totalHours
-              : 0;
+          {entries && entries.length > 0 ? (
+            entries.map((entry, index) => {
+              const otRate = calculateOTRate(entry.hourlyRate, entry.shiftType);
+              const dailyEarnings = calculateDailyEarnings(
+                entry.hourlyRate,
+                entry.totalHours,
+                entry.shiftType
+              );
+              const otPay = entry.shiftType.includes("OT")
+                ? otRate * entry.totalHours
+                : 0;
 
-            return (
-              <TableRow key={index}>
-                <TableCell>{format(entry.date, "PP")}</TableCell>
-                <TableCell className="font-medium">{entry.agentName}</TableCell>
-                <TableCell>{entry.timeIn}</TableCell>
-                <TableCell>{entry.timeOut}</TableCell>
-                <TableCell className="text-right">
-                  {entry.totalHours.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(entry.hourlyRate)}
-                </TableCell>
-                <TableCell>{entry.shiftType}</TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(otRate)}
-                </TableCell>
-                <TableCell className="text-right">{formatCurrency(otPay)}</TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(dailyEarnings)}
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onEdit(entry)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onDelete(entry)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+              return (
+                <TableRow key={index}>
+                  <TableCell>
+                    {entry.date instanceof Date 
+                      ? format(entry.date, "PP")
+                      : format(new Date(entry.date), "PP")}
+                  </TableCell>
+                  <TableCell className="font-medium">{entry.agentName}</TableCell>
+                  <TableCell>{entry.timeIn}</TableCell>
+                  <TableCell>{entry.timeOut}</TableCell>
+                  <TableCell className="text-right">
+                    {entry.totalHours.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(entry.hourlyRate)}
+                  </TableCell>
+                  <TableCell>{entry.shiftType}</TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(otRate)}
+                  </TableCell>
+                  <TableCell className="text-right">{formatCurrency(otPay)}</TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(dailyEarnings)}
+                  </TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onEdit(entry)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onDelete(entry)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          ) : (
+            <TableRow>
+              <TableCell colSpan={11} className="text-center py-4">
+                No entries found
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
