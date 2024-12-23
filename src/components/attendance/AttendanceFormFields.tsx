@@ -40,25 +40,7 @@ interface AttendanceFormFieldsProps {
 }
 
 export function AttendanceFormFields({ form, selectedAgent, directoryData }: AttendanceFormFieldsProps) {
-  useEffect(() => {
-    if (selectedAgent) {
-      const defaultTimes: { [key: string]: { timeIn: string; timeOut: string } } = {
-        "Cherrie Ferrer": { timeIn: "11:00 PM", timeOut: "7:00 AM" },
-        "Chrisjie Grefiel": { timeIn: "11:00 PM", timeOut: "7:00 AM" },
-        "Jobelle Fortuna": { timeIn: "9:00 PM", timeOut: "1:00 AM" },
-        "Mhel Malit": { timeIn: "8:00 PM", timeOut: "5:00 AM" },
-        "Gilbert Condino": { timeIn: "5:00 AM", timeOut: "1:00 PM" },
-      };
-
-      const times = defaultTimes[selectedAgent.name];
-      if (times) {
-        form.setValue("timeIn", times.timeIn);
-        form.setValue("timeOut", times.timeOut);
-        form.setValue("shiftType", "Regular Shift");
-      }
-    }
-  }, [selectedAgent, form]);
-
+  // Log current values for debugging
   console.log('Directory Data in Form:', directoryData);
   console.log('Selected Agent:', selectedAgent);
   console.log('Current Form Values:', form.getValues());
@@ -122,12 +104,16 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
                   <SelectValue placeholder="Select an agent" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent 
+                className="bg-white border rounded-md shadow-lg z-50"
+                position="popper"
+                sideOffset={5}
+              >
                 {directoryData.map((member) => (
                   <SelectItem 
                     key={member.name} 
                     value={member.name}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-gray-100 px-4 py-2"
                   >
                     {member.name}
                   </SelectItem>
@@ -178,12 +164,12 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
                   <SelectValue placeholder="Select shift type" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent className="bg-white border rounded-md shadow-lg z-50">
                 {SHIFT_TYPES.map((shift) => (
                   <SelectItem 
                     key={shift.type} 
                     value={shift.type}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-gray-100 px-4 py-2"
                   >
                     {shift.type}
                   </SelectItem>
