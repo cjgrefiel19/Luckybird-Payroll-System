@@ -37,27 +37,6 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
     return entryDate >= startDate && entryDate <= endDate;
   });
 
-  const calculateTotalEarnings = (
-    regularHours: number,
-    otHoursByType: { [key: string]: number },
-    hourlyRate: number,
-    paidLeaves: number
-  ) => {
-    // Regular hours earnings
-    const regularEarnings = regularHours * hourlyRate;
-
-    // OT hours earnings
-    const otEarnings = Object.entries(otHoursByType).reduce((total, [type, hours]) => {
-      const multiplier = SHIFT_TYPES.find(st => st.type === type)?.multiplier || 1;
-      return total + (hours * hourlyRate * multiplier);
-    }, 0);
-
-    // Paid leaves earnings (8 hours per day)
-    const paidLeaveEarnings = paidLeaves * 8 * hourlyRate;
-
-    return regularEarnings + otEarnings + paidLeaveEarnings;
-  };
-
   // Get unique agent names from filtered entries
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
@@ -101,13 +80,6 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         ["Regular Shift", "Paid SL", "Paid Leave"].includes(entry.shiftType)
       ).length;
 
-      const totalEarnings = calculateTotalEarnings(
-        regularHours,
-        otHoursByType,
-        member.hourlyRate,
-        paidLeaves
-      );
-
       return {
         name: member.name,
         regularHours,
@@ -116,7 +88,6 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         paidLeaves,
         unpaidDays,
         totalDays,
-        totalEarnings,
       };
     });
 
@@ -136,7 +107,6 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
               <TableHead className="text-center">Paid Leaves</TableHead>
               <TableHead className="text-center">Unpaid Days</TableHead>
               <TableHead className="text-center">Total Days</TableHead>
-              <TableHead className="text-center">Total Earnings</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -155,9 +125,6 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
                 <TableCell className="text-center">{row.paidLeaves}</TableCell>
                 <TableCell className="text-center">{row.unpaidDays}</TableCell>
                 <TableCell className="text-center">{row.totalDays}</TableCell>
-                <TableCell className="text-center">
-                  {formatCurrency(row.totalEarnings)}
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>

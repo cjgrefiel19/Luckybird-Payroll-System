@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TEAM_MEMBERS } from "@/lib/constants";
+import { TEAM_MEMBERS, SHIFT_TYPES } from "@/lib/constants";
 import { AttendanceEntry, NetPayData } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,11 +81,37 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
     );
   };
 
-  // Calculate total earnings for each agent based on filtered entries
   const calculateTotalEarnings = (agentName: string) => {
-    return filteredEntries
-      .filter((entry) => entry.agentName === agentName)
-      .reduce((sum, entry) => sum + entry.dailyEarnings, 0);
+    const memberEntries = filteredEntries.filter(
+      (entry) => entry.agentName === agentName
+    );
+
+    const regularHours = memberEntries
+      .filter((entry) => entry.shiftType === "Regular Shift")
+      .reduce((sum, entry) => sum + entry.totalHours, 0);
+
+    const otHours = memberEntries
+      .filter((entry) =>
+        ["Regular OT", "Rest Day OT", "Special Holidays", "Regular Holidays"].includes(
+          entry.shiftType
+        )
+      )
+      .reduce((sum, entry) => {
+        const multiplier = SHIFT_TYPES.find(st => st.type === entry.shiftType)?.multiplier || 1;
+        return sum + (entry.totalHours * entry.hourlyRate * multiplier);
+      }, 0);
+
+    const paidLeaves = memberEntries.filter((entry) =>
+      ["Paid SL", "Paid Leave"].includes(entry.shiftType)
+    ).length;
+
+    const member = TEAM_MEMBERS.find(m => m.name === agentName);
+    if (!member) return 0;
+
+    const regularEarnings = regularHours * member.hourlyRate;
+    const paidLeaveEarnings = paidLeaves * 8 * member.hourlyRate;
+
+    return regularEarnings + otHours + paidLeaveEarnings;
   };
 
   // Get unique agent names from filtered entries
@@ -103,8 +129,7 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
         reimbursements: 0,
       };
 
-      const netPay =
-        totalEarnings + netPayInfo.reimbursements - netPayInfo.deductions;
+      const netPay = totalEarnings + netPayInfo.reimbursements - netPayInfo.deductions;
 
       return {
         name: member.name,
