@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { useState } from "react";
 import {
   Select,
@@ -40,7 +40,6 @@ export function DateRangePicker({
   selectedPayPeriod,
   onPayPeriodSelect,
   onSavePayPeriod,
-  onDeletePayPeriod,
 }: DateRangePickerProps) {
   const [newPayPeriodName, setNewPayPeriodName] = useState("");
   const [showSaveInput, setShowSaveInput] = useState(false);
@@ -51,12 +50,6 @@ export function DateRangePicker({
       setNewPayPeriodName("");
       setShowSaveInput(false);
     }
-  };
-
-  const handleDelete = (e: React.MouseEvent, periodId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onDeletePayPeriod(periodId);
   };
 
   return (
@@ -81,20 +74,8 @@ export function DateRangePicker({
               <SelectItem 
                 key={period.id} 
                 value={period.id}
-                className="flex items-center justify-between pr-8"
               >
-                <div className="flex items-center justify-between w-full">
-                  <span>{period.name}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 ml-2 hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                    onClick={(e) => handleDelete(e, period.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {period.name}
               </SelectItem>
             ))}
           </SelectContent>
