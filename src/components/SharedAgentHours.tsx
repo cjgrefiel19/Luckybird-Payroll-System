@@ -118,6 +118,15 @@ export function SharedAgentHours() {
       <Card>
         <CardContent className="p-6">
           <div id="invoice-content">
+            {/* Company Details */}
+            <div className="mb-8 text-center border-b pb-4">
+              <h1 className="text-2xl font-bold mb-2">LuckyBird's Payroll</h1>
+              <p className="text-muted-foreground">123 Business Street, Suite 100</p>
+              <p className="text-muted-foreground">Los Angeles, CA 90012</p>
+              <p className="text-muted-foreground">Tel: (555) 123-4567</p>
+              <p className="text-muted-foreground">Email: payroll@luckybird.com</p>
+            </div>
+
             <div className="mb-6 flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-bold">{agentName}</h2>
