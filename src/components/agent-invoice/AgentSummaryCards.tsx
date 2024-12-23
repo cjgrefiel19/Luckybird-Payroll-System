@@ -43,7 +43,7 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
             {totalWorkingHours.toFixed(2)}h
           </div>
@@ -51,7 +51,7 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
             {totalOTHours.toFixed(2)}h
           </div>
@@ -59,7 +59,7 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
             {holidayHours.toFixed(2)}h
           </div>
@@ -67,13 +67,13 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">{leaveDays}</div>
           <p className="text-sm text-muted-foreground">Leave Days</p>
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
             {formatCurrency(totalEarnings)}
           </div>
