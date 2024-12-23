@@ -4,29 +4,41 @@ import { Button } from "./ui/button";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useToast } from "./ui/use-toast";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export function Invoice() {
   const { recordId } = useParams();
+  const navigate = useNavigate();
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [isPaid, setIsPaid] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!recordId) return;
+    if (!recordId) {
+      navigate('/');
+      return;
+    }
 
     const savedRecords = localStorage.getItem('payrollRecords');
     if (savedRecords) {
       const records = JSON.parse(savedRecords);
       const record = records.find((r: any) => r.id === recordId);
+      
       if (record) {
         setStartDate(new Date(record.payPeriod.startDate));
         setEndDate(new Date(record.payPeriod.endDate));
         setIsPaid(record.status === 'Paid');
+      } else {
+        toast({
+          title: "Error",
+          description: "Invoice not found",
+          variant: "destructive",
+        });
+        navigate('/');
       }
     }
-  }, [recordId]);
+  }, [recordId, navigate, toast]);
 
   const handleMarkAsPaid = () => {
     if (!recordId) return;
@@ -49,7 +61,11 @@ export function Invoice() {
   };
 
   if (!startDate || !endDate) {
-    return <div className="p-4">Loading invoice data...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading invoice data...</div>
+      </div>
+    );
   }
 
   return (
