@@ -6,27 +6,46 @@ import { useForm } from "react-hook-form";
 import { calculateTotalHours } from "@/lib/calculations";
 import { AttendanceFormFields, formSchema, FormFields } from "./attendance/AttendanceFormFields";
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AttendanceFormProps {
   onSubmit: (data: AttendanceEntry) => void;
   editingEntry?: AttendanceEntry | null;
 }
 
+const defaultDirectoryData: DirectoryEntry[] = [
+  { name: "Cherrie Ferrer", position: "Team Leader, Operations" },
+  { name: "Chrisjie Grefiel", position: "Director, Account Operations" },
+  { name: "Jobelle Fortuna", position: "Finance Specialist" },
+  { name: "Mhel Malit", position: "Sr. Operation Specialist" },
+  { name: "Gilbert Condino", position: "Team Leader, Sourcing" },
+];
+
 export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) {
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  const { toast } = useToast();
   
   useEffect(() => {
     const savedDirectory = localStorage.getItem('directoryData');
     if (savedDirectory) {
       setDirectoryData(JSON.parse(savedDirectory));
+    } else {
+      // Initialize with default data if none exists
+      localStorage.setItem('directoryData', JSON.stringify(defaultDirectoryData));
+      setDirectoryData(defaultDirectoryData);
+      toast({
+        title: "Directory Initialized",
+        description: "Default directory data has been loaded.",
+      });
     }
-  }, []);
+  }, [toast]);
 
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       timeIn: "",
       timeOut: "",
+      shiftType: "Regular Shift",
     }
   });
 
@@ -48,7 +67,14 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
 
   const handleSubmit = (values: FormFields) => {
     const member = directoryData.find((m) => m.name === values.agentName);
-    if (!member) return;
+    if (!member) {
+      toast({
+        title: "Error",
+        description: "Please select a valid agent",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
     
