@@ -7,15 +7,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface DirectoryEntry {
   name: string;
   position: string;
 }
 
-const directoryData: DirectoryEntry[] = [
+const defaultDirectoryData: DirectoryEntry[] = [
   {
     name: "Chrisjie Grefiel",
     position: "Director, Account Operations",
@@ -40,10 +41,33 @@ const directoryData: DirectoryEntry[] = [
 
 export function Directory() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof DirectoryEntry;
     direction: "asc" | "desc";
   } | null>(null);
+  const { toast } = useToast();
+
+  // Load directory data from localStorage on component mount
+  useEffect(() => {
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
+    } else {
+      // If no data exists in localStorage, use the default data
+      setDirectoryData(defaultDirectoryData);
+      localStorage.setItem('directoryData', JSON.stringify(defaultDirectoryData));
+      toast({
+        title: "Directory Initialized",
+        description: "Default directory data has been loaded.",
+      });
+    }
+  }, [toast]);
+
+  // Save directory data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('directoryData', JSON.stringify(directoryData));
+  }, [directoryData]);
 
   const handleSort = (key: keyof DirectoryEntry) => {
     setSortConfig((current) => ({
