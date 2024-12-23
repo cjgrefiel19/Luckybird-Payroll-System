@@ -20,7 +20,7 @@ export function DailyAttendance() {
   const [editingEntry, setEditingEntry] = useState<AttendanceEntry | null>(null);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [selectedAgent, setSelectedAgent] = useState<string>("");
+  const [selectedAgent, setSelectedAgent] = useState<string>("all");
   const { toast } = useToast();
 
   // Load entries from localStorage on component mount
@@ -84,7 +84,7 @@ export function DailyAttendance() {
     }
 
     // Filter by agent if one is selected
-    if (selectedAgent) {
+    if (selectedAgent !== "all") {
       matchesAgent = entry.agentName === selectedAgent;
     }
 
@@ -117,7 +117,7 @@ export function DailyAttendance() {
                 <SelectValue placeholder="Select an agent" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Agents</SelectItem>
+                <SelectItem value="all">All Agents</SelectItem>
                 {TEAM_MEMBERS.map((member) => (
                   <SelectItem key={member.name} value={member.name}>
                     {member.name}
