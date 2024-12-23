@@ -13,12 +13,16 @@ import {
 } from "@/lib/calculations";
 import { AttendanceEntry } from "@/lib/types";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface AttendanceTableProps {
   entries: AttendanceEntry[];
+  onEdit: (entry: AttendanceEntry) => void;
+  onDelete: (entry: AttendanceEntry) => void;
 }
 
-export function AttendanceTable({ entries }: AttendanceTableProps) {
+export function AttendanceTable({ entries, onEdit, onDelete }: AttendanceTableProps) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -34,6 +38,7 @@ export function AttendanceTable({ entries }: AttendanceTableProps) {
             <TableHead className="text-right">OT Rate</TableHead>
             <TableHead className="text-right">OT Pay</TableHead>
             <TableHead className="text-right">Daily Earnings</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,6 +72,22 @@ export function AttendanceTable({ entries }: AttendanceTableProps) {
                 <TableCell className="text-right">{formatCurrency(otPay)}</TableCell>
                 <TableCell className="text-right">
                   {formatCurrency(dailyEarnings)}
+                </TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onEdit(entry)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onDelete(entry)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             );

@@ -6,12 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { calculateTotalHours } from "@/lib/calculations";
 import { AttendanceFormFields, formSchema, FormFields } from "./attendance/AttendanceFormFields";
+import { useEffect } from "react";
 
 interface AttendanceFormProps {
   onSubmit: (data: AttendanceEntry) => void;
+  editingEntry?: AttendanceEntry | null;
 }
 
-export function AttendanceForm({ onSubmit }: AttendanceFormProps) {
+export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) {
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -19,6 +21,18 @@ export function AttendanceForm({ onSubmit }: AttendanceFormProps) {
       timeOut: "",
     }
   });
+
+  useEffect(() => {
+    if (editingEntry) {
+      form.reset({
+        date: editingEntry.date,
+        agentName: editingEntry.agentName,
+        timeIn: editingEntry.timeIn,
+        timeOut: editingEntry.timeOut,
+        shiftType: editingEntry.shiftType,
+      });
+    }
+  }, [editingEntry, form]);
 
   const selectedAgent = TEAM_MEMBERS.find(
     (member) => member.name === form.watch("agentName")
@@ -44,7 +58,9 @@ export function AttendanceForm({ onSubmit }: AttendanceFormProps) {
     };
 
     onSubmit(entry);
-    form.reset();
+    if (!editingEntry) {
+      form.reset();
+    }
   };
 
   return (
@@ -55,7 +71,7 @@ export function AttendanceForm({ onSubmit }: AttendanceFormProps) {
       >
         <AttendanceFormFields form={form} selectedAgent={selectedAgent} />
         <Button type="submit" className="w-full">
-          Add Entry
+          {editingEntry ? "Update Entry" : "Add Entry"}
         </Button>
       </form>
     </Form>
