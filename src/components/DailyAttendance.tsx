@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AttendanceForm } from "./AttendanceForm";
 import { AttendanceTable } from "./AttendanceTable";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { DateRangePicker } from "./dashboard/DateRangePicker";
@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TEAM_MEMBERS } from "@/lib/constants";
 import { isWithinInterval } from "date-fns";
 
 export function DailyAttendance() {
@@ -21,7 +20,18 @@ export function DailyAttendance() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [selectedAgent, setSelectedAgent] = useState<string>("all");
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
   const { toast } = useToast();
+
+  // Load directory data
+  useEffect(() => {
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      const parsedDirectory = JSON.parse(savedDirectory);
+      setDirectoryData(parsedDirectory);
+      console.log('Loaded directory data:', parsedDirectory);
+    }
+  }, []);
 
   // Load entries from localStorage on component mount
   useEffect(() => {
@@ -29,7 +39,7 @@ export function DailyAttendance() {
     if (savedEntries) {
       const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
         ...entry,
-        date: new Date(entry.date) // Convert date string back to Date object
+        date: new Date(entry.date)
       }));
       setEntries(parsedEntries);
     }
@@ -118,7 +128,7 @@ export function DailyAttendance() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
-                {TEAM_MEMBERS.map((member) => (
+                {directoryData.map((member) => (
                   <SelectItem key={member.name} value={member.name}>
                     {member.name}
                   </SelectItem>
