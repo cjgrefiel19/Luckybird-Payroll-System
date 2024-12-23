@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "./ui/use-toast";
 import { useParams, useNavigate } from "react-router-dom";
 import { DirectoryEntry } from "@/lib/types";
+import { InvoiceWatermark } from "./agent-invoice/InvoiceWatermark";
 
 export function Invoice() {
   const { recordId } = useParams();
@@ -87,6 +88,7 @@ export function Invoice() {
 
   return (
     <div className="p-4 space-y-4 relative">
+      {isPaid && <InvoiceWatermark />}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Payroll Invoice</h1>
@@ -100,14 +102,6 @@ export function Invoice() {
           Pay Period: {format(startDate, "PP")} - {format(endDate, "PP")}
         </p>
       </div>
-
-      {isPaid && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="transform rotate-[-35deg] border-8 border-red-500 rounded p-4">
-            <span className="text-6xl font-bold text-red-500">PAID</span>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-6">
         <PayrollSummary startDate={startDate} endDate={endDate} />
