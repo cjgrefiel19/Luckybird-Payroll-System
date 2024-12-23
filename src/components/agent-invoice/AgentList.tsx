@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryEntry } from "@/lib/types";
+import { DirectoryEntry, AttendanceEntry } from "@/lib/types";
 
 interface AgentListProps {
   startDate?: Date;
@@ -13,12 +13,14 @@ interface AgentListProps {
 export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: AgentListProps) {
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
   const [acceptedInvoices, setAcceptedInvoices] = useState<{ [key: string]: boolean }>({});
+  const [filteredAgents, setFilteredAgents] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     // Load directory data
     const savedDirectory = localStorage.getItem('directoryData');
     if (savedDirectory) {
-      setDirectoryData(JSON.parse(savedDirectory));
+      const directory = JSON.parse(savedDirectory);
+      setDirectoryData(directory);
     }
 
     // Load accepted invoices status
@@ -44,6 +46,37 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
     loadAcceptedStatus();
   }, []);
 
+  useEffect(() => {
+    if (startDate && endDate && directoryData.length > 0) {
+      // Load attendance entries
+      const savedEntries = localStorage.getItem('attendanceEntries');
+      if (savedEntries) {
+        const entries: AttendanceEntry[] = JSON.parse(savedEntries).map((entry: any) => ({
+          ...entry,
+          date: new Date(entry.date),
+        }));
+
+        // Filter entries within date range
+        const filteredEntries = entries.filter(entry => {
+          const entryDate = new Date(entry.date);
+          return entryDate >= startDate && entryDate <= endDate;
+        });
+
+        // Get unique agent names from filtered entries
+        const agentNames = [...new Set(filteredEntries.map(entry => entry.agentName))];
+
+        // Filter directory data to only show agents with entries in the date range
+        const activeAgents = directoryData.filter(agent => 
+          agentNames.includes(agent.name)
+        );
+
+        setFilteredAgents(activeAgents);
+      }
+    } else {
+      setFilteredAgents([]);
+    }
+  }, [startDate, endDate, directoryData]);
+
   return (
     <Card>
       <CardHeader>
@@ -51,33 +84,41 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {directoryData.map((agent) => (
-            <button
-              key={agent.name}
-              onClick={() => onSelectAgent(agent.name)}
-              className={`w-full text-left p-3 rounded-lg transition-colors ${
-                selectedAgent === agent.name
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{agent.name}</div>
-                  <div className={`text-sm ${
-                    selectedAgent === agent.name 
-                      ? "text-primary-foreground/80"
-                      : "text-muted-foreground"
-                  }`}>
-                    {agent.position}
+          {filteredAgents.length > 0 ? (
+            filteredAgents.map((agent) => (
+              <button
+                key={agent.name}
+                onClick={() => onSelectAgent(agent.name)}
+                className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  selectedAgent === agent.name
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{agent.name}</div>
+                    <div className={`text-sm ${
+                      selectedAgent === agent.name 
+                        ? "text-primary-foreground/80"
+                        : "text-muted-foreground"
+                    }`}>
+                      {agent.position}
+                    </div>
                   </div>
+                  <Badge variant={acceptedInvoices[agent.name] ? "success" : "secondary"}>
+                    {acceptedInvoices[agent.name] ? "Accepted" : "Pending"}
+                  </Badge>
                 </div>
-                <Badge variant={acceptedInvoices[agent.name] ? "success" : "secondary"}>
-                  {acceptedInvoices[agent.name] ? "Accepted" : "Pending"}
-                </Badge>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground py-4">
+              {startDate && endDate 
+                ? "No agents found for the selected date range" 
+                : "Please select a date range"}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
