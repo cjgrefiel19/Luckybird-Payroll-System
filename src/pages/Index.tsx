@@ -17,11 +17,11 @@ const Index = () => {
             className="w-24 h-24 object-contain self-center"
           />
           <div className="text-left flex flex-col justify-center h-24">
-            <h1 className="text-2xl font-bold text-primary">LuckyBird's Payroll</h1>
+            <h1 className="text-2xl font-bold text-primary">LuckyBird</h1>
             <address className="not-italic text-muted-foreground">
               732 N. Madelia St.<br />
               Spokane, WA 99202<br />
-              +1 (509) 508-9440
+              +1 (509) 508-2229
             </address>
           </div>
         </div>
