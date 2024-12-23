@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AttendanceEntry } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { DirectoryEntry } from "@/lib/types";
 
 interface AgentListProps {
   startDate?: Date;
@@ -11,50 +10,39 @@ interface AgentListProps {
   selectedAgent: string | null;
 }
 
-const agentDirectory = [
-  { name: "Chrisjie Grefiel", position: "Director, Account Operations" },
-  { name: "Gilbert Condino", position: "Team Leader, Sourcing" },
-  { name: "Mhel Malit", position: "Sr. Operation Specialist" },
-  { name: "Cherrie Ferrer", position: "Team Leader, Operations" },
-  { name: "Jobelle Fortuna", position: "Finance Specialist" }
-];
-
 export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: AgentListProps) {
-  const [entries, setEntries] = useState<AttendanceEntry[]>([]);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  const [acceptedInvoices, setAcceptedInvoices] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    const savedEntries = localStorage.getItem('attendanceEntries');
-    
-    if (savedEntries) {
-      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
-        ...entry,
-        date: new Date(entry.date)
-      }));
-      setEntries(parsedEntries);
+    // Load directory data
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
     }
+
+    // Load accepted invoices status
+    const loadAcceptedStatus = () => {
+      const allKeys = Object.keys(localStorage);
+      const acceptanceKeys = allKeys.filter(key => key.startsWith('invoice-acceptance-'));
+      const acceptedStatus: { [key: string]: boolean } = {};
+
+      acceptanceKeys.forEach(key => {
+        const encodedInfo = key.replace('invoice-acceptance-', '');
+        try {
+          const decodedInfo = atob(encodedInfo);
+          const [agentName] = decodedInfo.split('|');
+          acceptedStatus[agentName] = true;
+        } catch (e) {
+          console.error('Error decoding acceptance key:', e);
+        }
+      });
+
+      setAcceptedInvoices(acceptedStatus);
+    };
+
+    loadAcceptedStatus();
   }, []);
-
-  const filteredEntries = entries.filter((entry) => {
-    if (!startDate || !endDate) return true;
-    const entryDate = new Date(entry.date);
-    return entryDate >= startDate && entryDate <= endDate;
-  });
-
-  const uniqueAgents = [...new Set(filteredEntries.map(entry => {
-    const directoryEntry = agentDirectory.find(dir => 
-      entry.agentName.toLowerCase().includes(dir.name.split(' ')[0].toLowerCase())
-    );
-    return directoryEntry ? directoryEntry.name : entry.agentName;
-  }))];
-
-  const getInvoiceStatus = (agentName: string) => {
-    if (!startDate || !endDate) return "pending";
-    
-    const firstName = agentName.split(' ')[0].toLowerCase();
-    const encodedInfo = btoa(`${agentName}|${agentDirectory.find(dir => dir.name === agentName)?.position || ''}|${format(startDate, 'yyyy-MM-dd')}|${format(endDate, 'yyyy-MM-dd')}`);
-    const isAccepted = localStorage.getItem(`invoice-acceptance-${encodedInfo}`);
-    return isAccepted ? "accepted" : "pending";
-  };
 
   return (
     <Card>
@@ -63,46 +51,33 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {uniqueAgents.map((agentName) => {
-            const directoryEntry = agentDirectory.find(dir => 
-              dir.name.toLowerCase() === agentName.toLowerCase()
-            );
-            const status = getInvoiceStatus(agentName);
-            
-            return (
-              <button
-                key={agentName}
-                onClick={() => onSelectAgent(agentName)}
-                className={`w-full text-left p-3 rounded-lg transition-colors ${
-                  selectedAgent === agentName
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">
-                      {directoryEntry?.name || agentName}
-                    </div>
-                    {directoryEntry && (
-                      <div className={`text-sm ${
-                        selectedAgent === agentName 
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground"
-                      }`}>
-                        {directoryEntry.position}
-                      </div>
-                    )}
+          {directoryData.map((agent) => (
+            <button
+              key={agent.name}
+              onClick={() => onSelectAgent(agent.name)}
+              className={`w-full text-left p-3 rounded-lg transition-colors ${
+                selectedAgent === agent.name
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{agent.name}</div>
+                  <div className={`text-sm ${
+                    selectedAgent === agent.name 
+                      ? "text-primary-foreground/80"
+                      : "text-muted-foreground"
+                  }`}>
+                    {agent.position}
                   </div>
-                  {startDate && endDate ? (
-                    <Badge variant={status === "accepted" ? "success" : "secondary"}>
-                      {status === "accepted" ? "Accepted" : "Pending"}
-                    </Badge>
-                  ) : null}
                 </div>
-              </button>
-            );
-          })}
+                <Badge variant={acceptedInvoices[agent.name] ? "success" : "secondary"}>
+                  {acceptedInvoices[agent.name] ? "Accepted" : "Pending"}
+                </Badge>
+              </div>
+            </button>
+          ))}
         </div>
       </CardContent>
     </Card>
