@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AgentAttendanceTable } from "./AgentAttendanceTable";
-import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AgentDetailsProps {
@@ -26,7 +26,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
         const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
           ...entry,
           date: new Date(entry.date),
-          agentName: entry.agentName.trim() // Normalize agent names by trimming whitespace
+          agentName: entry.agentName.trim()
         }));
         setEntries(parsedEntries);
         console.log('Total entries loaded:', parsedEntries.length);
@@ -58,7 +58,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     // Then check if the date is within range (if dates are provided)
     let withinDateRange = true;
     if (startDate && endDate) {
-      const entryDate = startOfDay(new Date(entry.date));
+      const entryDate = startOfDay(entry.date);
       const periodStart = startOfDay(startDate);
       const periodEnd = endOfDay(endDate);
       
@@ -66,22 +66,22 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
         start: periodStart,
         end: periodEnd
       });
-    }
-    
-    // Log filtering details for debugging
-    if (matchesAgent) {
-      console.log(`Entry for ${entry.agentName} on ${entry.date}:`, 
-        withinDateRange ? 'within date range' : 'outside date range',
-        'Entry date:', entry.date,
-        'Start date:', startDate,
-        'End date:', endDate
-      );
-    }
-    
-    return matchesAgent && withinDateRange;
-  }).sort((a, b) => b.date.getTime() - a.date.getTime()); // Sort by date descending
 
-  // Log filtered results
+      console.log('Checking date range for:', entry.agentName);
+      console.log('Entry date:', entryDate);
+      console.log('Period start:', periodStart);
+      console.log('Period end:', periodEnd);
+      console.log('Within range:', withinDateRange);
+    }
+    
+    const shouldInclude = matchesAgent && withinDateRange;
+    if (matchesAgent) {
+      console.log(`Entry for ${entry.agentName}:`, shouldInclude ? 'included' : 'excluded');
+    }
+    
+    return shouldInclude;
+  }).sort((a, b) => b.date.getTime() - a.date.getTime());
+
   console.log(`Found ${filteredEntries.length} entries for ${agentName} in selected date range`);
 
   const directoryEntry = directoryData.find(entry => 
