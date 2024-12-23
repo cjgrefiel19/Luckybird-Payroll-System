@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { Check, FileText } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import html2pdf from 'html2pdf.js';
+import { Badge } from "./ui/badge";
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
@@ -21,6 +22,12 @@ export function SharedAgentHours() {
 
   useEffect(() => {
     if (!agentId) return;
+
+    // Check if invoice was previously accepted
+    const savedAcceptance = localStorage.getItem(`invoice-acceptance-${agentId}`);
+    if (savedAcceptance) {
+      setAccepted(true);
+    }
 
     const savedEntries = localStorage.getItem('attendanceEntries');
     if (savedEntries) {
@@ -59,6 +66,10 @@ export function SharedAgentHours() {
 
   const handleAccept = () => {
     setAccepted(true);
+    // Save acceptance status
+    if (agentId) {
+      localStorage.setItem(`invoice-acceptance-${agentId}`, 'true');
+    }
     toast({
       title: "Invoice Accepted",
       description: "You have successfully accepted this invoice.",
@@ -92,9 +103,14 @@ export function SharedAgentHours() {
       <Card>
         <CardContent className="p-6">
           <div id="invoice-content">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{agentName}</h2>
-              <p className="text-muted-foreground">{position}</p>
+            <div className="mb-6 flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold">{agentName}</h2>
+                <p className="text-muted-foreground">{position}</p>
+              </div>
+              <Badge variant={accepted ? "success" : "secondary"}>
+                {accepted ? "Accepted" : "Pending"}
+              </Badge>
             </div>
 
             <div className="space-y-6">
