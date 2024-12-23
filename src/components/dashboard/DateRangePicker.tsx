@@ -18,11 +18,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PayPeriod } from "@/lib/types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface DateRangePickerProps {
   startDate?: Date;
@@ -59,6 +54,7 @@ export function DateRangePicker({
   };
 
   const handleDelete = (e: React.MouseEvent, periodId: string) => {
+    e.preventDefault();
     e.stopPropagation();
     onDeletePayPeriod(periodId);
   };
@@ -85,17 +81,20 @@ export function DateRangePicker({
               <SelectItem 
                 key={period.id} 
                 value={period.id}
-                className="flex items-center justify-between group"
+                className="flex items-center justify-between pr-8"
               >
-                <span>{period.name}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 ml-2 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-all"
-                  onClick={(e) => handleDelete(e, period.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center justify-between w-full">
+                  <span>{period.name}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 ml-2 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    onClick={(e) => handleDelete(e, period.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
