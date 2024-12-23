@@ -59,6 +59,10 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
     }
   }, [selectedAgent, form]);
 
+  console.log('Directory Data in Form:', directoryData);
+  console.log('Selected Agent:', selectedAgent);
+  console.log('Current Form Values:', form.getValues());
+
   return (
     <>
       <FormField
@@ -108,15 +112,23 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
         render={({ field }) => (
           <FormItem>
             <FormLabel>Agent Name</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value}
+              defaultValue={field.value}
+            >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="w-full bg-background">
                   <SelectValue placeholder="Select an agent" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
                 {directoryData.map((member) => (
-                  <SelectItem key={member.name} value={member.name}>
+                  <SelectItem 
+                    key={member.name} 
+                    value={member.name}
+                    className="cursor-pointer"
+                  >
                     {member.name}
                   </SelectItem>
                 ))}
@@ -162,13 +174,17 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
             <FormLabel>Shift Type</FormLabel>
             <Select onValueChange={field.onChange} value={field.value || "Regular Shift"}>
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="w-full bg-background">
                   <SelectValue placeholder="Select shift type" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
                 {SHIFT_TYPES.map((shift) => (
-                  <SelectItem key={shift.type} value={shift.type}>
+                  <SelectItem 
+                    key={shift.type} 
+                    value={shift.type}
+                    className="cursor-pointer"
+                  >
                     {shift.type}
                   </SelectItem>
                 ))}
