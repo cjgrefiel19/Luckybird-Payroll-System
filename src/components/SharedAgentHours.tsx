@@ -106,7 +106,15 @@ export function SharedAgentHours() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 relative">
+      {accepted && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50 overflow-hidden">
+          <div className="transform rotate-[-35deg] text-red-500/20 text-[20vw] font-black whitespace-nowrap select-none">
+            PAID
+          </div>
+        </div>
+      )}
+      
       <Card>
         <CardContent className="p-6">
           <div id="invoice-content">
