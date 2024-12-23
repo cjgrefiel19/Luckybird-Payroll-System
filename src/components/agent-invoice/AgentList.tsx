@@ -31,17 +31,26 @@ export function AgentList({
   useEffect(() => {
     const loadAgentInfo = () => {
       const savedDirectory = localStorage.getItem('directoryData');
-      if (!savedDirectory) return;
+      if (!savedDirectory) {
+        console.log('No directory data found');
+        return;
+      }
 
-      const directoryData: DirectoryEntry[] = JSON.parse(savedDirectory);
-      const agentInfo: AgentInfo[] = directoryData.map(entry => ({
-        fullName: entry.name,
-        position: entry.position,
-        firstName: entry.name.split(' ')[0],
-        hasEntries: false
-      }));
-
-      setAgents(agentInfo);
+      try {
+        const directoryData: DirectoryEntry[] = JSON.parse(savedDirectory);
+        console.log('Loaded directory data:', directoryData);
+        
+        const agentInfo: AgentInfo[] = directoryData.map(entry => ({
+          fullName: entry.name,
+          position: entry.position,
+          firstName: entry.name.split(' ')[0],
+          hasEntries: false
+        }));
+        
+        setAgents(agentInfo);
+      } catch (error) {
+        console.error('Error parsing directory data:', error);
+      }
     };
 
     loadAgentInfo();
@@ -73,41 +82,48 @@ export function AgentList({
 
   // Update agents with attendance data
   useEffect(() => {
+    if (!agents.length) return;
+
     if (startDate && endDate) {
       const savedEntries = localStorage.getItem('attendanceEntries');
+      console.log('Loaded attendance entries:', savedEntries);
+      
       if (!savedEntries) {
         setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
         return;
       }
 
-      const entries: AttendanceEntry[] = JSON.parse(savedEntries).map((entry: any) => ({
-        ...entry,
-        date: new Date(entry.date),
-      }));
+      try {
+        const entries: AttendanceEntry[] = JSON.parse(savedEntries).map((entry: any) => ({
+          ...entry,
+          date: new Date(entry.date),
+        }));
 
-      // Filter entries within date range
-      const filteredEntries = entries.filter(entry => {
-        const entryDate = new Date(entry.date);
-        return isWithinInterval(entryDate, { start: startDate, end: endDate });
-      });
+        // Filter entries within date range
+        const filteredEntries = entries.filter(entry => {
+          const entryDate = new Date(entry.date);
+          return isWithinInterval(entryDate, { start: startDate, end: endDate });
+        });
 
-      // Create a set of first names from filtered entries
-      const activeFirstNames = new Set(
-        filteredEntries.map(entry => entry.agentName.split(' ')[0])
-      );
+        console.log('Filtered entries:', filteredEntries);
 
-      // Update agents with hasEntries flag
-      setAgents(prevAgents => 
-        prevAgents.map(agent => ({
-          ...agent,
-          hasEntries: activeFirstNames.has(agent.firstName)
-        }))
-      );
+        // Update agents with hasEntries flag based on first name match
+        setAgents(prevAgents => 
+          prevAgents.map(agent => ({
+            ...agent,
+            hasEntries: filteredEntries.some(entry => 
+              entry.agentName.split(' ')[0].toLowerCase() === agent.firstName.toLowerCase()
+            )
+          }))
+        );
+      } catch (error) {
+        console.error('Error processing attendance entries:', error);
+      }
     } else {
-      // If no date range is selected, show all agents but mark them as having no entries
+      // If no date range is selected, show all agents
       setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, agents.length]);
 
   return (
     <Card>
@@ -144,9 +160,7 @@ export function AgentList({
               ))
           ) : (
             <div className="text-center text-muted-foreground py-4">
-              {startDate && endDate 
-                ? "No agents found for the selected date range" 
-                : "Please select a date range"}
+              No agents found
             </div>
           )}
         </div>
