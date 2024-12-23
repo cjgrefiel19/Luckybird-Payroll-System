@@ -45,7 +45,7 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
       <Card>
         <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
-            {totalWorkingHours.toFixed(2)}h
+            {totalWorkingHours.toFixed(2)}
           </div>
           <p className="text-sm text-muted-foreground">Total Hours</p>
         </CardContent>
@@ -53,7 +53,7 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
       <Card>
         <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
-            {totalOTHours.toFixed(2)}h
+            {totalOTHours.toFixed(2)}
           </div>
           <p className="text-sm text-muted-foreground">Total OT Hours</p>
         </CardContent>
@@ -61,7 +61,7 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
       <Card>
         <CardContent className="pt-6 text-center">
           <div className="text-2xl font-bold">
-            {holidayHours.toFixed(2)}h
+            {holidayHours.toFixed(2)}
           </div>
           <p className="text-sm text-muted-foreground">Holiday Hours</p>
         </CardContent>
