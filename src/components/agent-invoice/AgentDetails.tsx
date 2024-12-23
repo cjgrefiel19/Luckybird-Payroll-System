@@ -53,7 +53,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
 
     // Create a unique identifier for the agent and their position
     const encodedAgentInfo = btoa(`${agentName}|${startDate.toISOString()}|${endDate.toISOString()}`);
-    const sharedUrl = `/shared-agent-hours/${encodedAgentInfo}`;
+    const sharedUrl = `/shared/agent/${encodedAgentInfo}`;
 
     // Generate absolute URL
     const baseUrl = window.location.origin;
@@ -76,17 +76,10 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     }
   };
 
-  const handleAccept = () => {
-    if (!startDate || !endDate) return;
-    
-    setAccepted(true);
-    const encodedAcceptanceKey = btoa(`${agentName}|${startDate.toISOString()}|${endDate.toISOString()}`);
-    localStorage.setItem(`invoice-acceptance-${encodedAcceptanceKey}`, 'true');
-    
-    toast({
-      title: "Invoice Accepted",
-      description: "You have successfully accepted this invoice.",
-    });
+  const handleViewInvoice = () => {
+    if (generatedLink) {
+      window.open(generatedLink, '_blank');
+    }
   };
 
   return (
@@ -95,15 +88,10 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold">{agentName}</h3>
           <div className="flex items-center gap-4">
-            {!accepted && (
-              <Button onClick={handleGenerateLink} className="gap-2">
-                <Link className="h-4 w-4" />
-                Generate Shareable Link
-              </Button>
-            )}
-            {accepted && (
-              <span className="text-green-500 font-semibold">Accepted</span>
-            )}
+            <Button onClick={handleGenerateLink} className="gap-2">
+              <Link className="h-4 w-4" />
+              Generate Shareable Link
+            </Button>
           </div>
         </div>
 
@@ -121,6 +109,12 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
               className="shrink-0"
             >
               <Copy className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleViewInvoice}
+            >
+              View Invoice
             </Button>
           </div>
         )}
