@@ -16,29 +16,19 @@ import { TEAM_MEMBERS } from "@/lib/constants";
 
 export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculatorProps) {
   const [netPayData, setNetPayData] = useState<NetPayData[]>([]);
-  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedNetPayData = localStorage.getItem('netPayData');
     if (savedNetPayData) {
       setNetPayData(JSON.parse(savedNetPayData));
-    }
-
-    // Load directory data
-    const savedDirectory = localStorage.getItem('directoryData');
-    if (savedDirectory) {
-      const directory = JSON.parse(savedDirectory);
-      setDirectoryData(directory);
-      
-      // Initialize netPayData if it doesn't exist
-      if (!savedNetPayData) {
-        const initialData = directory.map((member: DirectoryEntry) => ({
-          agentName: member.name,
-          deductions: 0,
-          reimbursements: 0,
-        }));
-        setNetPayData(initialData);
-      }
+    } else {
+      // Initialize with team members if no saved data
+      const initialData = TEAM_MEMBERS.map((member) => ({
+        agentName: member.name,
+        deductions: 0,
+        reimbursements: 0,
+      }));
+      setNetPayData(initialData);
     }
   }, []);
 
@@ -53,7 +43,7 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
     setNetPayData((prev) =>
       prev.map((data) =>
         data.agentName === agentName
-          ? { ...data, deductions: value === '' ? 0 : parseFloat(value) }
+          ? { ...data, deductions: value === '' ? 0 : Number(value) }
           : data
       )
     );
@@ -63,7 +53,7 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
     setNetPayData((prev) =>
       prev.map((data) =>
         data.agentName === agentName
-          ? { ...data, reimbursements: value === '' ? 0 : parseFloat(value) }
+          ? { ...data, reimbursements: value === '' ? 0 : Number(value) }
           : data
       )
     );
@@ -92,7 +82,6 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
       };
     });
 
-  // Calculate totals
   const totals = summaryData.reduce(
     (acc, curr) => ({
       totalEarnings: acc.totalEarnings + curr.totalEarnings,
