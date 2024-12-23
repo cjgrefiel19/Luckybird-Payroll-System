@@ -3,6 +3,7 @@ import { TeamSchedule } from "@/components/TeamSchedule";
 import { DailyAttendance } from "@/components/DailyAttendance";
 import { Dashboard } from "@/components/Dashboard";
 import { PayrollRecords } from "@/components/PayrollRecords";
+import { Directory } from "@/components/Directory";
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
           <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="records">Payroll Records</TabsTrigger>
+          <TabsTrigger value="directory">Directory</TabsTrigger>
         </TabsList>
         <TabsContent value="schedule">
           <TeamSchedule />
@@ -26,6 +28,9 @@ const Index = () => {
         </TabsContent>
         <TabsContent value="records">
           <PayrollRecords />
+        </TabsContent>
+        <TabsContent value="directory">
+          <Directory />
         </TabsContent>
       </Tabs>
     </div>
