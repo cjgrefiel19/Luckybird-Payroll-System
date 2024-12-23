@@ -59,7 +59,6 @@ export function DateRangePicker({
   };
 
   const handleDelete = (e: React.MouseEvent, periodId: string) => {
-    e.preventDefault();
     e.stopPropagation();
     onDeletePayPeriod(periodId);
   };
@@ -85,25 +84,18 @@ export function DateRangePicker({
             {payPeriods.map((period) => (
               <SelectItem 
                 key={period.id} 
-                value={period.id} 
-                className="flex items-center justify-between pr-8"
+                value={period.id}
+                className="flex items-center justify-between group"
               >
                 <span>{period.name}</span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 ml-2 hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                      onClick={(e) => handleDelete(e, period.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete pay period</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 ml-2 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-all"
+                  onClick={(e) => handleDelete(e, period.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </SelectItem>
             ))}
           </SelectContent>
