@@ -7,6 +7,9 @@ import { format } from "date-fns";
 import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
 import { AgentSummaryCards } from "./agent-invoice/AgentSummaryCards";
+import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
+import { InvoiceActions } from "./agent-invoice/InvoiceActions";
+import html2pdf from 'html2pdf.js';
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
@@ -67,6 +70,26 @@ export function SharedAgentHours() {
     });
   };
 
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('invoice-content');
+    if (!element) return;
+
+    const opt = {
+      margin: 1,
+      filename: `invoice-${agentName}-${format(startDate!, "yyyy-MM-dd")}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+    
+    toast({
+      title: "Success",
+      description: "Invoice downloaded successfully",
+    });
+  };
+
   if (!agentId || !startDate || !endDate) {
     return <div>Invalid link</div>;
   }
@@ -74,7 +97,9 @@ export function SharedAgentHours() {
   return (
     <div className="container mx-auto py-8">
       <Card>
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="p-6 space-y-6" id="invoice-content">
+          <InvoiceHeader logo="/lovable-uploads/721bca4a-5642-4aa3-b371-870b16bf31fb.png" />
+          
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold">{agentName}</h2>
@@ -82,11 +107,6 @@ export function SharedAgentHours() {
                 Pay Period: {format(startDate, "PPP")} - {format(endDate, "PPP")}
               </p>
             </div>
-            {!accepted && (
-              <Button onClick={handleAccept} className="bg-green-500 hover:bg-green-600">
-                Accept Invoice
-              </Button>
-            )}
             {accepted && (
               <span className="text-green-500 font-semibold">Invoice Accepted</span>
             )}
@@ -99,6 +119,12 @@ export function SharedAgentHours() {
           </div>
         </CardContent>
       </Card>
+
+      <InvoiceActions
+        onAccept={handleAccept}
+        onDownload={handleDownloadPDF}
+        accepted={accepted}
+      />
     </div>
   );
 }
