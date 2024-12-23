@@ -39,7 +39,10 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
   const handleDeductionsChange = (agentName: string, value: string) => {
-    const numValue = value === '' ? 0 : parseFloat(value);
+    // Remove any non-numeric characters except decimal point
+    const sanitizedValue = value.replace(/[^\d.]/g, '');
+    const numValue = sanitizedValue === '' ? 0 : parseFloat(sanitizedValue);
+    
     if (!isNaN(numValue)) {
       setNetPayData((prev) =>
         prev.map((data) =>
@@ -52,7 +55,10 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   };
 
   const handleReimbursementsChange = (agentName: string, value: string) => {
-    const numValue = value === '' ? 0 : parseFloat(value);
+    // Remove any non-numeric characters except decimal point
+    const sanitizedValue = value.replace(/[^\d.]/g, '');
+    const numValue = sanitizedValue === '' ? 0 : parseFloat(sanitizedValue);
+    
     if (!isNaN(numValue)) {
       setNetPayData((prev) =>
         prev.map((data) =>

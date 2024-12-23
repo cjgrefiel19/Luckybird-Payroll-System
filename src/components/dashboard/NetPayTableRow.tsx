@@ -20,23 +20,21 @@ export function NetPayTableRow({
       </TableCell>
       <TableCell className="text-center">
         <Input
-          type="number"
-          value={deductions === 0 ? '' : deductions}
+          type="text"
+          inputMode="decimal"
+          value={deductions === 0 ? '' : deductions.toString()}
           onChange={(e) => onDeductionsChange(e.target.value)}
           className="w-32 mx-auto text-center"
-          min="0"
-          step="0.01"
           placeholder="0.00"
         />
       </TableCell>
       <TableCell className="text-center">
         <Input
-          type="number"
-          value={reimbursements === 0 ? '' : reimbursements}
+          type="text"
+          inputMode="decimal"
+          value={reimbursements === 0 ? '' : reimbursements.toString()}
           onChange={(e) => onReimbursementsChange(e.target.value)}
           className="w-32 mx-auto text-center"
-          min="0"
-          step="0.01"
           placeholder="0.00"
         />
       </TableCell>
