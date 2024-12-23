@@ -3,10 +3,24 @@ import { AttendanceForm } from "./AttendanceForm";
 import { AttendanceTable } from "./AttendanceTable";
 import { AttendanceEntry } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { DateRangePicker } from "./dashboard/DateRangePicker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TEAM_MEMBERS } from "@/lib/constants";
+import { isWithinInterval } from "date-fns";
 
 export function DailyAttendance() {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [editingEntry, setEditingEntry] = useState<AttendanceEntry | null>(null);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [selectedAgent, setSelectedAgent] = useState<string>("");
   const { toast } = useToast();
 
   // Load entries from localStorage on component mount
@@ -57,12 +71,67 @@ export function DailyAttendance() {
     });
   };
 
+  const filteredEntries = entries.filter((entry) => {
+    let matchesDateRange = true;
+    let matchesAgent = true;
+
+    // Filter by date range if both dates are selected
+    if (startDate && endDate) {
+      matchesDateRange = isWithinInterval(new Date(entry.date), {
+        start: startDate,
+        end: endDate,
+      });
+    }
+
+    // Filter by agent if one is selected
+    if (selectedAgent) {
+      matchesAgent = entry.agentName === selectedAgent;
+    }
+
+    return matchesDateRange && matchesAgent;
+  });
+
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-2xl font-bold mb-4">Daily Attendance</h2>
+      
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              payPeriods={[]}
+              selectedPayPeriod={null}
+              onPayPeriodSelect={() => {}}
+              onSavePayPeriod={() => {}}
+              onDeletePayPeriod={() => {}}
+            />
+            <Select
+              value={selectedAgent}
+              onValueChange={setSelectedAgent}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select an agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Agents</SelectItem>
+                {TEAM_MEMBERS.map((member) => (
+                  <SelectItem key={member.name} value={member.name}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       <AttendanceForm onSubmit={handleSubmit} editingEntry={editingEntry} />
       <AttendanceTable 
-        entries={entries} 
+        entries={filteredEntries} 
         onEdit={handleEdit} 
         onDelete={handleDelete} 
       />
