@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AgentAttendanceTable } from "./AgentAttendanceTable";
-import { isWithinInterval } from "date-fns";
+import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AgentDetailsProps {
@@ -25,12 +25,11 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
       try {
         const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
           ...entry,
-          date: new Date(entry.date)
+          date: new Date(entry.date),
+          agentName: entry.agentName.trim() // Normalize agent names by trimming whitespace
         }));
         setEntries(parsedEntries);
-        
-        // Log the number of entries loaded
-        console.log(`Loaded ${parsedEntries.length} total attendance entries`);
+        console.log('Total entries loaded:', parsedEntries.length);
       } catch (error) {
         console.error('Error parsing attendance entries:', error);
         toast({
@@ -51,23 +50,32 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   }, [toast]);
 
   const filteredEntries = entries.filter((entry) => {
-    // First check if the agent name matches (case-insensitive)
-    const matchesAgent = entry.agentName.toLowerCase() === agentName.toLowerCase();
+    // Normalize agent names for comparison
+    const normalizedEntryName = entry.agentName.toLowerCase().trim();
+    const normalizedSelectedName = agentName.toLowerCase().trim();
+    const matchesAgent = normalizedEntryName === normalizedSelectedName;
     
     // Then check if the date is within range (if dates are provided)
     let withinDateRange = true;
     if (startDate && endDate) {
-      const entryDate = new Date(entry.date);
+      const entryDate = startOfDay(new Date(entry.date));
+      const periodStart = startOfDay(startDate);
+      const periodEnd = endOfDay(endDate);
+      
       withinDateRange = isWithinInterval(entryDate, {
-        start: startDate,
-        end: endDate
+        start: periodStart,
+        end: periodEnd
       });
     }
     
     // Log filtering details for debugging
     if (matchesAgent) {
-      console.log(`Found entry for ${agentName} on ${entry.date}:`, 
-        withinDateRange ? 'within date range' : 'outside date range');
+      console.log(`Entry for ${entry.agentName} on ${entry.date}:`, 
+        withinDateRange ? 'within date range' : 'outside date range',
+        'Entry date:', entry.date,
+        'Start date:', startDate,
+        'End date:', endDate
+      );
     }
     
     return matchesAgent && withinDateRange;
@@ -77,7 +85,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   console.log(`Found ${filteredEntries.length} entries for ${agentName} in selected date range`);
 
   const directoryEntry = directoryData.find(entry => 
-    entry.name.toLowerCase() === agentName.toLowerCase()
+    entry.name.toLowerCase().trim() === agentName.toLowerCase().trim()
   );
 
   if (!startDate || !endDate) {
