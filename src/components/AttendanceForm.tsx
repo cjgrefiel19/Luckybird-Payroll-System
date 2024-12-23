@@ -28,13 +28,13 @@ export function AttendanceForm({ onSubmit }: AttendanceFormProps) {
     const member = TEAM_MEMBERS.find((m) => m.name === values.agentName);
     if (!member) return;
 
-    const totalHours = calculateTotalHours(member.timeIn, member.timeOut);
+    const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
     
     const entry: AttendanceEntry = {
       date: values.date,
       agentName: values.agentName,
-      timeIn: member.timeIn,
-      timeOut: member.timeOut,
+      timeIn: values.timeIn,
+      timeOut: values.timeOut,
       totalHours,
       hourlyRate: member.hourlyRate,
       shiftType: values.shiftType as any,

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { SHIFT_TYPES, TEAM_MEMBERS } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   date: z.date(),
@@ -37,6 +38,13 @@ interface AttendanceFormFieldsProps {
 }
 
 export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFieldsProps) {
+  useEffect(() => {
+    if (selectedAgent) {
+      form.setValue("timeIn", selectedAgent.timeIn);
+      form.setValue("timeOut", selectedAgent.timeOut);
+    }
+  }, [selectedAgent, form]);
+
   return (
     <>
       <FormField
@@ -112,7 +120,7 @@ export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFiel
             <FormItem>
               <FormLabel>Time In</FormLabel>
               <FormControl>
-                <Input {...field} value={selectedAgent?.timeIn || ""} disabled />
+                <Input {...field} />
               </FormControl>
             </FormItem>
           )}
@@ -125,7 +133,7 @@ export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFiel
             <FormItem>
               <FormLabel>Time Out</FormLabel>
               <FormControl>
-                <Input {...field} value={selectedAgent?.timeOut || ""} disabled />
+                <Input {...field} />
               </FormControl>
             </FormItem>
           )}
