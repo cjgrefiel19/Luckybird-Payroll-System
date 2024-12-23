@@ -88,9 +88,11 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{agentName}</CardTitle>
+        <CardTitle className="text-2xl">{agentName}</CardTitle>
         {directoryEntry && (
-          <p className="text-sm text-muted-foreground">{directoryEntry.position}</p>
+          <p className="text-md text-muted-foreground font-medium">
+            {directoryEntry.position}
+          </p>
         )}
       </CardHeader>
       <CardContent className="space-y-4">
