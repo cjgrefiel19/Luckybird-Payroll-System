@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttendanceEntry } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
 
 interface AgentListProps {
   startDate?: Date;
@@ -39,12 +40,18 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
   });
 
   const uniqueAgents = [...new Set(filteredEntries.map(entry => {
-    // Find the full name from directory based on partial match
     const directoryEntry = agentDirectory.find(dir => 
       entry.agentName.toLowerCase().includes(dir.name.split(' ')[0].toLowerCase())
     );
     return directoryEntry ? directoryEntry.name : entry.agentName;
   }))];
+
+  const getInvoiceStatus = (agentName: string) => {
+    const firstName = agentName.split(' ')[0].toLowerCase();
+    const encodedInfo = btoa(`${agentName}|${agentDirectory.find(dir => dir.name === agentName)?.position || ''}`);
+    const isAccepted = localStorage.getItem(`invoice-acceptance-${encodedInfo}`);
+    return isAccepted ? "accepted" : "pending";
+  };
 
   return (
     <Card>
@@ -57,6 +64,7 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
             const directoryEntry = agentDirectory.find(dir => 
               dir.name.toLowerCase() === agentName.toLowerCase()
             );
+            const status = getInvoiceStatus(agentName);
             
             return (
               <button
@@ -68,18 +76,25 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
                     : "hover:bg-muted"
                 }`}
               >
-                <div className="font-medium">
-                  {directoryEntry?.name || agentName}
-                </div>
-                {directoryEntry && (
-                  <div className={`text-sm ${
-                    selectedAgent === agentName 
-                      ? "text-primary-foreground/80"
-                      : "text-muted-foreground"
-                  }`}>
-                    {directoryEntry.position}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">
+                      {directoryEntry?.name || agentName}
+                    </div>
+                    {directoryEntry && (
+                      <div className={`text-sm ${
+                        selectedAgent === agentName 
+                          ? "text-primary-foreground/80"
+                          : "text-muted-foreground"
+                      }`}>
+                        {directoryEntry.position}
+                      </div>
+                    )}
                   </div>
-                )}
+                  <Badge variant={status === "accepted" ? "success" : "secondary"}>
+                    {status === "accepted" ? "Accepted" : "Pending"}
+                  </Badge>
+                </div>
               </button>
             );
           })}
