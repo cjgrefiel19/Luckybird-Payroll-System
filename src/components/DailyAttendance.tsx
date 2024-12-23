@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AttendanceForm } from "./AttendanceForm";
 import { AttendanceTable } from "./AttendanceTable";
 import { AttendanceEntry } from "@/lib/types";
@@ -8,6 +8,23 @@ export function DailyAttendance() {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [editingEntry, setEditingEntry] = useState<AttendanceEntry | null>(null);
   const { toast } = useToast();
+
+  // Load entries from localStorage on component mount
+  useEffect(() => {
+    const savedEntries = localStorage.getItem('attendanceEntries');
+    if (savedEntries) {
+      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
+        ...entry,
+        date: new Date(entry.date) // Convert date string back to Date object
+      }));
+      setEntries(parsedEntries);
+    }
+  }, []);
+
+  // Save entries to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('attendanceEntries', JSON.stringify(entries));
+  }, [entries]);
 
   const handleSubmit = (entry: AttendanceEntry) => {
     if (editingEntry) {
