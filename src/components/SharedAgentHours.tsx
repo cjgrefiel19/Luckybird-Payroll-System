@@ -5,27 +5,28 @@ import { AgentAttendanceTable } from "./agent-invoice/AgentAttendanceTable";
 import { AttendanceEntry } from "@/lib/types";
 import { format } from "date-fns";
 import { useToast } from "./ui/use-toast";
-import html2pdf from 'html2pdf.js';
-import { InvoiceWatermark } from "./agent-invoice/InvoiceWatermark";
-import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
-import { InvoiceAgentDetails } from "./agent-invoice/InvoiceAgentDetails";
-import { InvoiceSummary } from "./agent-invoice/InvoiceSummary";
-import { InvoiceActions } from "./agent-invoice/InvoiceActions";
+import { Button } from "./ui/button";
+import { AgentSummaryCards } from "./agent-invoice/AgentSummaryCards";
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [agentName, setAgentName] = useState("");
-  const [position, setPosition] = useState("");
-  const [totalHours, setTotalHours] = useState(0);
-  const [payPeriod, setPayPeriod] = useState<{ start: Date; end: Date } | null>(null);
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
   const [accepted, setAccepted] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!agentId) return;
 
-    // Check if invoice was previously accepted
+    // Decode agent info from ID
+    const [name, start, end] = atob(agentId).split('|');
+    setAgentName(name);
+    setStartDate(new Date(start));
+    setEndDate(new Date(end));
+
+    // Load entries for this agent
     const savedEntries = localStorage.getItem('attendanceEntries');
     if (savedEntries) {
       const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
@@ -33,103 +34,69 @@ export function SharedAgentHours() {
         date: new Date(entry.date),
       }));
 
-      // Filter entries for this agent
-      const agentEntries = parsedEntries.filter((entry: AttendanceEntry) => {
-        const entryFirstName = entry.agentName.split(' ')[0].toLowerCase();
-        const agentFirstName = atob(agentId).split('|')[0].split(' ')[0].toLowerCase();
-        return entryFirstName === agentFirstName;
+      // Filter entries for this agent and date range
+      const filteredEntries = parsedEntries.filter((entry: AttendanceEntry) => {
+        const entryDate = new Date(entry.date);
+        return (
+          entry.agentName === name &&
+          entryDate >= new Date(start) &&
+          entryDate <= new Date(end)
+        );
       });
 
-      // Calculate total hours
-      const total = agentEntries.reduce((sum, entry) => sum + entry.totalHours, 0);
-      setTotalHours(total);
-
-      // Find pay period range
-      if (agentEntries.length > 0) {
-        const dates = agentEntries.map(entry => entry.date);
-        const startDate = new Date(Math.min(...dates.map(date => date.getTime())));
-        const endDate = new Date(Math.max(...dates.map(date => date.getTime())));
-        setPayPeriod({ start: startDate, end: endDate });
-      }
-
-      setEntries(agentEntries);
+      setEntries(filteredEntries);
     }
 
-    // Decode agent info from ID
-    const decodedInfo = atob(agentId).split('|');
-    setAgentName(decodedInfo[0]);
-    setPosition(decodedInfo[1]);
-
-    // Check acceptance status with date range
-    if (payPeriod) {
-      const encodedAcceptanceKey = btoa(`${decodedInfo[0]}|${decodedInfo[1]}|${format(payPeriod.start, 'yyyy-MM-dd')}|${format(payPeriod.end, 'yyyy-MM-dd')}`);
-      const savedAcceptance = localStorage.getItem(`invoice-acceptance-${encodedAcceptanceKey}`);
-      if (savedAcceptance) {
-        setAccepted(true);
-      }
+    // Check if already accepted
+    const acceptanceKey = `invoice-acceptance-${agentId}`;
+    const savedAcceptance = localStorage.getItem(acceptanceKey);
+    if (savedAcceptance) {
+      setAccepted(true);
     }
-  }, [agentId, payPeriod]);
+  }, [agentId]);
 
   const handleAccept = () => {
-    if (!payPeriod) return;
+    if (!agentId) return;
     
     setAccepted(true);
-    if (agentId) {
-      const encodedAcceptanceKey = btoa(`${agentName}|${position}|${format(payPeriod.start, 'yyyy-MM-dd')}|${format(payPeriod.end, 'yyyy-MM-dd')}`);
-      localStorage.setItem(`invoice-acceptance-${encodedAcceptanceKey}`, 'true');
-    }
+    localStorage.setItem(`invoice-acceptance-${agentId}`, 'true');
+    
     toast({
       title: "Invoice Accepted",
       description: "You have successfully accepted this invoice.",
     });
   };
 
-  const handleDownloadPDF = () => {
-    const element = document.getElementById('invoice-content');
-    const opt = {
-      margin: 0.5,
-      filename: `${agentName}-invoice.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-
-    html2pdf().set(opt).from(element).save().then(() => {
-      toast({
-        title: "PDF Downloaded",
-        description: "Your invoice has been downloaded successfully.",
-      });
-    });
-  };
-
-  if (!agentId) {
+  if (!agentId || !startDate || !endDate) {
     return <div>Invalid link</div>;
   }
 
   return (
-    <div className="container mx-auto py-8 relative">
-      <InvoiceWatermark show={accepted} />
-      
+    <div className="container mx-auto py-8">
       <Card>
-        <CardContent className="p-6">
-          <div id="invoice-content" className="space-y-8">
-            <InvoiceHeader logo="/lovable-uploads/35d5de7b-23b9-4504-a609-8dc8d8d07555.png" />
-            <InvoiceAgentDetails 
-              agentName={agentName}
-              position={position}
-              payPeriod={payPeriod}
-            />
-            <InvoiceSummary totalHours={totalHours} />
-            <div className="overflow-x-auto">
-              <AgentAttendanceTable entries={entries} />
+        <CardContent className="p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">{agentName}</h2>
+              <p className="text-sm text-muted-foreground">
+                Pay Period: {format(startDate, "PPP")} - {format(endDate, "PPP")}
+              </p>
             </div>
+            {!accepted && (
+              <Button onClick={handleAccept} className="bg-green-500 hover:bg-green-600">
+                Accept Invoice
+              </Button>
+            )}
+            {accepted && (
+              <span className="text-green-500 font-semibold">Invoice Accepted</span>
+            )}
           </div>
 
-          <InvoiceActions 
-            onAccept={handleAccept}
-            onDownload={handleDownloadPDF}
-            accepted={accepted}
-          />
+          <AgentSummaryCards filteredEntries={entries} />
+          
+          <div className="overflow-x-auto">
+            <AgentAttendanceTable entries={entries} />
+          </div>
         </CardContent>
       </Card>
     </div>
