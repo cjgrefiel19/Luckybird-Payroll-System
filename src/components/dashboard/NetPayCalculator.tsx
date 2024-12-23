@@ -50,20 +50,22 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
   const handleDeductionsChange = (agentName: string, value: string) => {
+    const numericValue = value === '' ? 0 : parseFloat(value);
     setNetPayData((prev) =>
       prev.map((data) =>
         data.agentName === agentName
-          ? { ...data, deductions: parseFloat(value) || 0 }
+          ? { ...data, deductions: numericValue }
           : data
       )
     );
   };
 
   const handleReimbursementsChange = (agentName: string, value: string) => {
+    const numericValue = value === '' ? 0 : parseFloat(value);
     setNetPayData((prev) =>
       prev.map((data) =>
         data.agentName === agentName
-          ? { ...data, reimbursements: parseFloat(value) || 0 }
+          ? { ...data, reimbursements: numericValue }
           : data
       )
     );
