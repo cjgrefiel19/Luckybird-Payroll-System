@@ -10,7 +10,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableCell,
 } from "@/components/ui/table";
+import { formatCurrency } from "@/lib/calculations";
 
 export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculatorProps) {
   const [netPayData, setNetPayData] = useState<NetPayData[]>([]);
@@ -79,6 +81,17 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
       };
     });
 
+  // Calculate totals
+  const totals = summaryData.reduce(
+    (acc, curr) => ({
+      totalEarnings: acc.totalEarnings + curr.totalEarnings,
+      deductions: acc.deductions + curr.deductions,
+      reimbursements: acc.reimbursements + curr.reimbursements,
+      netPay: acc.netPay + curr.netPay,
+    }),
+    { totalEarnings: 0, deductions: 0, reimbursements: 0, netPay: 0 }
+  );
+
   return (
     <Table>
       <TableHeader>
@@ -99,6 +112,13 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
             onReimbursementsChange={(value) => handleReimbursementsChange(row.name, value)}
           />
         ))}
+        <TableRow className="font-bold bg-muted/50">
+          <TableCell className="text-center">TOTAL</TableCell>
+          <TableCell className="text-center">{formatCurrency(totals.totalEarnings)}</TableCell>
+          <TableCell className="text-center">{formatCurrency(totals.deductions)}</TableCell>
+          <TableCell className="text-center">{formatCurrency(totals.reimbursements)}</TableCell>
+          <TableCell className="text-center">{formatCurrency(totals.netPay)}</TableCell>
+        </TableRow>
       </TableBody>
     </Table>
   );
