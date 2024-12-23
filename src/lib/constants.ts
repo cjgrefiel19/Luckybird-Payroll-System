@@ -2,7 +2,7 @@ import { ShiftType, TeamMember } from "./types";
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {
-    name: "Cherrie",
+    name: "Cherrie Ferrer",
     timeIn: "11:00 PM",
     timeOut: "7:00 AM",
     workdays: "Monday - Friday",
@@ -11,7 +11,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     hourlyRate: 5.38,
   },
   {
-    name: "Chrisjie",
+    name: "Chrisjie Grefiel",
     timeIn: "11:00 PM",
     timeOut: "7:00 AM",
     workdays: "Monday - Friday",
@@ -20,7 +20,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     hourlyRate: 8.75,
   },
   {
-    name: "Jobelle",
+    name: "Jobelle Fortuna",
     timeIn: "9:00 PM",
     timeOut: "1:00 AM",
     workdays: "Monday - Friday",
@@ -29,7 +29,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     hourlyRate: 5.00,
   },
   {
-    name: "Mhel",
+    name: "Mhel Malit",
     timeIn: "8:00 PM",
     timeOut: "5:00 AM",
     workdays: "Monday - Friday",
@@ -38,7 +38,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     hourlyRate: 4.69,
   },
   {
-    name: "Gilbert",
+    name: "Gilbert Condino",
     timeIn: "5:00 AM",
     timeOut: "1:00 PM",
     workdays: "Tuesday - Saturday",
