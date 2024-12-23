@@ -13,12 +13,12 @@ export function NetPayTableRow({
   onReimbursementsChange,
 }: NetPayTableRowProps) {
   const handleDeductionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value === '' ? '0' : e.target.value;
     onDeductionsChange(value);
   };
 
   const handleReimbursementsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value === '' ? '0' : e.target.value;
     onReimbursementsChange(value);
   };
 
@@ -31,7 +31,7 @@ export function NetPayTableRow({
       <TableCell className="text-center">
         <Input
           type="number"
-          value={deductions === 0 && deductions !== null ? '' : deductions}
+          value={deductions || ''}
           onChange={handleDeductionsChange}
           className="w-32 mx-auto text-center"
           min="0"
@@ -42,7 +42,7 @@ export function NetPayTableRow({
       <TableCell className="text-center">
         <Input
           type="number"
-          value={reimbursements === 0 && reimbursements !== null ? '' : reimbursements}
+          value={reimbursements || ''}
           onChange={handleReimbursementsChange}
           className="w-32 mx-auto text-center"
           min="0"
