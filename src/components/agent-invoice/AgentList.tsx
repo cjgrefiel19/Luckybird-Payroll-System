@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
-import { TEAM_MEMBERS } from "@/lib/constants";
 
 interface AgentListProps {
   startDate?: Date;
@@ -47,23 +46,28 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
       <CardContent>
         <div className="space-y-2">
           {uniqueAgents.map((agentName) => {
-            const directoryEntry = directoryData.find(entry => entry.name === agentName);
-            const position = directoryEntry?.position || "Position not specified";
+            const directoryEntry = directoryData.find(entry => 
+              entry.name.toLowerCase().includes(agentName.toLowerCase())
+            );
             
             return (
               <button
                 key={agentName}
-                onClick={() => onSelectAgent(agentName)}
+                onClick={() => onSelectAgent(directoryEntry?.name || agentName)}
                 className={`w-full text-left p-3 rounded-lg transition-colors ${
-                  selectedAgent === agentName
+                  selectedAgent === (directoryEntry?.name || agentName)
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted"
                 }`}
               >
-                <div className="font-medium">{agentName}</div>
-                <div className="text-sm text-muted-foreground">
-                  {position}
+                <div className="font-medium">
+                  {directoryEntry?.name || agentName}
                 </div>
+                {directoryEntry && (
+                  <div className="text-sm text-muted-foreground">
+                    {directoryEntry.position}
+                  </div>
+                )}
               </button>
             );
           })}
