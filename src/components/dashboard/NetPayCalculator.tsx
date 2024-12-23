@@ -12,6 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/calculations";
+import { TEAM_MEMBERS } from "@/lib/constants";
 
 export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculatorProps) {
   const [netPayData, setNetPayData] = useState<NetPayData[]>([]);
@@ -68,7 +69,7 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
     );
   };
 
-  const summaryData = directoryData
+  const summaryData = TEAM_MEMBERS
     .filter(member => activeAgents.includes(member.name))
     .map((member) => {
       const memberEntries = filteredEntries.filter(
