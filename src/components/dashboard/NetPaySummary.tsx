@@ -81,15 +81,20 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
     );
   };
 
+  // Calculate total earnings for each agent based on filtered entries
+  const calculateTotalEarnings = (agentName: string) => {
+    return filteredEntries
+      .filter((entry) => entry.agentName === agentName)
+      .reduce((sum, entry) => sum + entry.dailyEarnings, 0);
+  };
+
   // Get unique agent names from filtered entries
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
   const summaryData = TEAM_MEMBERS
     .filter(member => activeAgents.includes(member.name))
     .map((member) => {
-      const totalEarnings = filteredEntries
-        .filter((entry) => entry.agentName === member.name)
-        .reduce((sum, entry) => sum + entry.dailyEarnings, 0);
+      const totalEarnings = calculateTotalEarnings(member.name);
 
       const netPayInfo = netPayData.find(
         (data) => data.agentName === member.name
