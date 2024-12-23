@@ -21,6 +21,15 @@ const defaultDirectoryData: DirectoryEntry[] = [
   { name: "Gilbert Condino", position: "Team Leader, Sourcing" },
 ];
 
+// Default schedule for each agent
+const defaultSchedules: { [key: string]: { timeIn: string; timeOut: string } } = {
+  "Cherrie Ferrer": { timeIn: "11:00 PM", timeOut: "7:00 AM" },
+  "Chrisjie Grefiel": { timeIn: "11:00 PM", timeOut: "7:00 AM" },
+  "Jobelle Fortuna": { timeIn: "9:00 PM", timeOut: "1:00 AM" },
+  "Mhel Malit": { timeIn: "8:00 PM", timeOut: "5:00 AM" },
+  "Gilbert Condino": { timeIn: "5:00 AM", timeOut: "1:00 PM" },
+};
+
 export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) {
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
   const { toast } = useToast();
@@ -30,7 +39,6 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     if (savedDirectory) {
       setDirectoryData(JSON.parse(savedDirectory));
     } else {
-      // Initialize with default data if none exists
       localStorage.setItem('directoryData', JSON.stringify(defaultDirectoryData));
       setDirectoryData(defaultDirectoryData);
       toast({
@@ -49,6 +57,18 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     }
   });
 
+  // Watch for changes in the selected agent
+  const selectedAgentName = form.watch("agentName");
+
+  // Auto-populate time fields when agent is selected
+  useEffect(() => {
+    if (selectedAgentName && defaultSchedules[selectedAgentName]) {
+      const schedule = defaultSchedules[selectedAgentName];
+      form.setValue("timeIn", schedule.timeIn);
+      form.setValue("timeOut", schedule.timeOut);
+    }
+  }, [selectedAgentName, form]);
+
   useEffect(() => {
     if (editingEntry) {
       form.reset({
@@ -62,7 +82,7 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
   }, [editingEntry, form]);
 
   const selectedAgent = directoryData.find(
-    (member) => member.name === form.watch("agentName")
+    (member) => member.name === selectedAgentName
   );
 
   const handleSubmit = (values: FormFields) => {
