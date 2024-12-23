@@ -33,7 +33,6 @@ export function Invoice() {
     
     setIsPaid(true);
     
-    // Update record status in localStorage
     const savedRecords = localStorage.getItem('payrollRecords');
     if (savedRecords) {
       const records = JSON.parse(savedRecords);
