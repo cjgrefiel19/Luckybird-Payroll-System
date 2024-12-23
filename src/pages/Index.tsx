@@ -9,13 +9,22 @@ import { AgentInvoice } from "@/components/AgentInvoice";
 const Index = () => {
   return (
     <div className="container mx-auto py-6">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-primary">LuckyBird's Payroll</h1>
-        <address className="not-italic text-muted-foreground">
-          732 N. Madelia St.<br />
-          Spokane, WA 99202<br />
-          +1 (509) 508-9440
-        </address>
+      <div className="flex items-start mb-8 gap-4">
+        <div className="flex items-start gap-4">
+          <img 
+            src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png" 
+            alt="LuckyBird Logo" 
+            className="w-16 h-16 object-contain"
+          />
+          <div className="text-left">
+            <h1 className="text-2xl font-bold text-primary">LuckyBird's Payroll</h1>
+            <address className="not-italic text-muted-foreground">
+              732 N. Madelia St.<br />
+              Spokane, WA 99202<br />
+              +1 (509) 508-9440
+            </address>
+          </div>
+        </div>
       </div>
       
       <Tabs defaultValue="dashboard" className="space-y-4">
