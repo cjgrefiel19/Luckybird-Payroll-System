@@ -26,9 +26,10 @@ export function AgentAttendanceTable({ entries }: AgentAttendanceTableProps) {
             <TableHead>Date</TableHead>
             <TableHead>Time In</TableHead>
             <TableHead>Time Out</TableHead>
+            <TableHead>Total Hours</TableHead>
             <TableHead>Shift Type</TableHead>
-            <TableHead className="text-center">Hourly Rate</TableHead>
-            <TableHead className="text-center">Daily Earnings</TableHead>
+            <TableHead className="text-right">Hourly Rate</TableHead>
+            <TableHead className="text-right">Daily Earnings</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -44,11 +45,12 @@ export function AgentAttendanceTable({ entries }: AgentAttendanceTableProps) {
                 <TableCell>{format(new Date(entry.date), "PP")}</TableCell>
                 <TableCell>{entry.timeIn}</TableCell>
                 <TableCell>{entry.timeOut}</TableCell>
+                <TableCell>{entry.totalHours.toFixed(2)}</TableCell>
                 <TableCell>{entry.shiftType}</TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-right">
                   {formatCurrency(entry.hourlyRate)}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-right">
                   {formatCurrency(dailyEarnings)}
                 </TableCell>
               </TableRow>
