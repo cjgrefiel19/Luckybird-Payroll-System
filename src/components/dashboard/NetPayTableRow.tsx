@@ -21,7 +21,7 @@ export function NetPayTableRow({
       <TableCell className="text-center">
         <Input
           type="number"
-          value={deductions === 0 ? '' : deductions}
+          value={deductions || ''}
           onChange={(e) => onDeductionsChange(e.target.value)}
           className="w-32 mx-auto text-center"
           min="0"
@@ -32,7 +32,7 @@ export function NetPayTableRow({
       <TableCell className="text-center">
         <Input
           type="number"
-          value={reimbursements === 0 ? '' : reimbursements}
+          value={reimbursements || ''}
           onChange={(e) => onReimbursementsChange(e.target.value)}
           className="w-32 mx-auto text-center"
           min="0"
