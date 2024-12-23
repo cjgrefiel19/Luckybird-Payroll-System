@@ -31,22 +31,22 @@ export function NetPayTableRow({
       <TableCell className="text-center">
         <Input
           type="number"
-          value={deductions === 0 ? '' : deductions}
+          value={deductions === 0 && deductions !== null ? '' : deductions}
           onChange={handleDeductionsChange}
           className="w-32 mx-auto text-center"
           min="0"
-          step="0.01"
+          step="any"
           placeholder="0.00"
         />
       </TableCell>
       <TableCell className="text-center">
         <Input
           type="number"
-          value={reimbursements === 0 ? '' : reimbursements}
+          value={reimbursements === 0 && reimbursements !== null ? '' : reimbursements}
           onChange={handleReimbursementsChange}
           className="w-32 mx-auto text-center"
           min="0"
-          step="0.01"
+          step="any"
           placeholder="0.00"
         />
       </TableCell>
