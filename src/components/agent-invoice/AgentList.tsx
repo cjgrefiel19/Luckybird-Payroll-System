@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
+import { AttendanceEntry } from "@/lib/types";
 
 interface AgentListProps {
   startDate?: Date;
@@ -9,13 +9,19 @@ interface AgentListProps {
   selectedAgent: string | null;
 }
 
+const agentDirectory = [
+  { name: "Chrisjie Grefiel", position: "Director, Account Operations" },
+  { name: "Gilbert Condino", position: "Team Leader, Sourcing" },
+  { name: "Mhel Malit", position: "Sr. Operation Specialist" },
+  { name: "Cherrie Ferrer", position: "Team Leader, Operations" },
+  { name: "Jobelle Fortuna", position: "Finance Specialist" }
+];
+
 export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: AgentListProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
-  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
-    const savedDirectory = localStorage.getItem('directoryData');
     
     if (savedEntries) {
       const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
@@ -23,10 +29,6 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
         date: new Date(entry.date)
       }));
       setEntries(parsedEntries);
-    }
-    
-    if (savedDirectory) {
-      setDirectoryData(JSON.parse(savedDirectory));
     }
   }, []);
 
@@ -36,7 +38,13 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
     return entryDate >= startDate && entryDate <= endDate;
   });
 
-  const uniqueAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
+  const uniqueAgents = [...new Set(filteredEntries.map(entry => {
+    // Find the full name from directory based on partial match
+    const directoryEntry = agentDirectory.find(dir => 
+      entry.agentName.toLowerCase().includes(dir.name.split(' ')[0].toLowerCase())
+    );
+    return directoryEntry ? directoryEntry.name : entry.agentName;
+  }))];
 
   return (
     <Card>
@@ -46,8 +54,8 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
       <CardContent>
         <div className="space-y-2">
           {uniqueAgents.map((agentName) => {
-            const directoryEntry = directoryData.find(entry => 
-              entry.name.toLowerCase() === agentName.toLowerCase()
+            const directoryEntry = agentDirectory.find(dir => 
+              dir.name.toLowerCase() === agentName.toLowerCase()
             );
             
             return (
