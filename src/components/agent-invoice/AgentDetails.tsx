@@ -66,6 +66,11 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     0
   );
 
+  const totalWorkingHours = filteredEntries.reduce(
+    (sum, entry) => sum + entry.totalHours,
+    0
+  );
+
   const totalOTHours = filteredEntries
     .filter(entry => entry.shiftType.includes('OT'))
     .reduce((sum, entry) => sum + entry.totalHours, 0);
@@ -121,7 +126,15 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
           </TableBody>
         </Table>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">
+                {totalWorkingHours.toFixed(2)}h
+              </div>
+              <p className="text-sm text-muted-foreground">Total Hours</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">
