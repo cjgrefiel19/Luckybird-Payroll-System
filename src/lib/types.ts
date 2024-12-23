@@ -44,3 +44,15 @@ export interface NetPayData {
   deductions: number;
   reimbursements: number;
 }
+
+export interface PayrollRecord {
+  id: string;
+  payPeriod: {
+    startDate: Date;
+    endDate: Date;
+  };
+  generatedLink: string;
+  status: 'Pending' | 'Paid';
+  comments: string;
+  createdAt: Date;
+}
