@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryEntry, AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry } from "@/lib/types";
 import { isWithinInterval } from "date-fns";
 
 interface AgentListProps {
@@ -11,20 +11,17 @@ interface AgentListProps {
   selectedAgent: string | null;
 }
 
-export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: AgentListProps) {
-  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+export function AgentList({ 
+  startDate, 
+  endDate, 
+  onSelectAgent, 
+  selectedAgent 
+}: AgentListProps) {
+  const [agents, setAgents] = useState<string[]>([]);
   const [acceptedInvoices, setAcceptedInvoices] = useState<{ [key: string]: boolean }>({});
-  const [filteredAgents, setFilteredAgents] = useState<DirectoryEntry[]>([]);
 
+  // Load accepted invoices status
   useEffect(() => {
-    // Load directory data
-    const savedDirectory = localStorage.getItem('directoryData');
-    if (savedDirectory) {
-      const directory = JSON.parse(savedDirectory);
-      setDirectoryData(directory);
-    }
-
-    // Load accepted invoices status
     const loadAcceptedStatus = () => {
       const allKeys = Object.keys(localStorage);
       const acceptanceKeys = allKeys.filter(key => key.startsWith('invoice-acceptance-'));
@@ -47,9 +44,9 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
     loadAcceptedStatus();
   }, []);
 
+  // Load and filter agents based on attendance entries
   useEffect(() => {
     if (startDate && endDate) {
-      // Load attendance entries
       const savedEntries = localStorage.getItem('attendanceEntries');
       if (savedEntries) {
         const entries: AttendanceEntry[] = JSON.parse(savedEntries).map((entry: any) => ({
@@ -64,19 +61,13 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
         });
 
         // Get unique agent names from filtered entries
-        const agentNames = [...new Set(filteredEntries.map(entry => entry.agentName))];
-
-        // Filter directory data to only show agents with entries in the date range
-        const activeAgents = directoryData.filter(agent => 
-          agentNames.includes(agent.name)
-        );
-
-        setFilteredAgents(activeAgents);
+        const uniqueAgents = Array.from(new Set(filteredEntries.map(entry => entry.agentName)));
+        setAgents(uniqueAgents);
       }
     } else {
-      setFilteredAgents([]);
+      setAgents([]);
     }
-  }, [startDate, endDate, directoryData]);
+  }, [startDate, endDate]);
 
   return (
     <Card>
@@ -85,30 +76,21 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {filteredAgents.length > 0 ? (
-            filteredAgents.map((agent) => (
+          {agents.length > 0 ? (
+            agents.map((agent) => (
               <button
-                key={agent.name}
-                onClick={() => onSelectAgent(agent.name)}
+                key={agent}
+                onClick={() => onSelectAgent(agent)}
                 className={`w-full text-left p-3 rounded-lg transition-colors ${
-                  selectedAgent === agent.name
+                  selectedAgent === agent
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{agent.name}</div>
-                    <div className={`text-sm ${
-                      selectedAgent === agent.name 
-                        ? "text-primary-foreground/80"
-                        : "text-muted-foreground"
-                    }`}>
-                      {agent.position}
-                    </div>
-                  </div>
-                  <Badge variant={acceptedInvoices[agent.name] ? "success" : "secondary"}>
-                    {acceptedInvoices[agent.name] ? "Accepted" : "Pending"}
+                  <div className="font-medium">{agent}</div>
+                  <Badge variant={acceptedInvoices[agent] ? "success" : "secondary"}>
+                    {acceptedInvoices[agent] ? "Accepted" : "Pending"}
                   </Badge>
                 </div>
               </button>
