@@ -48,7 +48,12 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   }, [toast]);
 
   const filteredEntries = entries.filter((entry) => {
-    const matchesAgent = entry.agentName.toLowerCase() === agentName.toLowerCase();
+    // Get first name of the selected agent
+    const selectedFirstName = agentName.split(' ')[0].toLowerCase();
+    // Get first name of the entry
+    const entryFirstName = entry.agentName.split(' ')[0].toLowerCase();
+    
+    const matchesAgent = entryFirstName === selectedFirstName;
     
     let withinDateRange = true;
     if (startDate && endDate) {
