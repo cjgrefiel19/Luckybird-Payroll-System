@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { TEAM_MEMBERS } from "@/lib/constants";
-import { NetPayData } from "@/lib/types";
+import { NetPayData, DirectoryEntry } from "@/lib/types";
 import { calculateTotalEarnings, filterEntriesByDateRange } from "./utils/netPayCalculations";
 import { NetPayCalculatorProps } from "./types/netPay";
 import { NetPayTableRow } from "./NetPayTableRow";
@@ -16,18 +15,29 @@ import { formatCurrency } from "@/lib/calculations";
 
 export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculatorProps) {
   const [netPayData, setNetPayData] = useState<NetPayData[]>([]);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedNetPayData = localStorage.getItem('netPayData');
     if (savedNetPayData) {
       setNetPayData(JSON.parse(savedNetPayData));
-    } else {
-      const initialData = TEAM_MEMBERS.map((member) => ({
-        agentName: member.name,
-        deductions: 0,
-        reimbursements: 0,
-      }));
-      setNetPayData(initialData);
+    }
+
+    // Load directory data
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      const directory = JSON.parse(savedDirectory);
+      setDirectoryData(directory);
+      
+      // Initialize netPayData if it doesn't exist
+      if (!savedNetPayData) {
+        const initialData = directory.map((member: DirectoryEntry) => ({
+          agentName: member.name,
+          deductions: 0,
+          reimbursements: 0,
+        }));
+        setNetPayData(initialData);
+      }
     }
   }, []);
 
@@ -58,7 +68,7 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
     );
   };
 
-  const summaryData = TEAM_MEMBERS
+  const summaryData = directoryData
     .filter(member => activeAgents.includes(member.name))
     .map((member) => {
       const memberEntries = filteredEntries.filter(

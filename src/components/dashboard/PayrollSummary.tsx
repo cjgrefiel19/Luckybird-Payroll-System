@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TEAM_MEMBERS, SHIFT_TYPES } from "@/lib/constants";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -19,6 +19,7 @@ interface PayrollSummaryProps {
 
 export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
@@ -28,6 +29,12 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         date: new Date(entry.date)
       }));
       setEntries(parsedEntries);
+    }
+
+    // Load directory data
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
     }
   }, []);
 
@@ -40,7 +47,7 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
   // Get unique agent names from filtered entries
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
-  const summaryData = TEAM_MEMBERS
+  const summaryData = directoryData
     .filter(member => activeAgents.includes(member.name))
     .map((member) => {
       const memberEntries = filteredEntries.filter(
@@ -80,11 +87,14 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         ["Regular Shift", "Paid SL", "Paid Leave"].includes(entry.shiftType)
       ).length;
 
+      // Find hourly rate from entries
+      const hourlyRate = memberEntries[0]?.hourlyRate || 0;
+
       return {
         name: member.name,
         regularHours,
         otHours: totalOtHours,
-        hourlyRate: member.hourlyRate,
+        hourlyRate,
         paidLeaves,
         unpaidDays,
         totalDays,
