@@ -118,14 +118,16 @@ export function SharedAgentHours() {
         <CardContent className="p-6">
           <div id="invoice-content" className="space-y-8">
             {/* Header with Logo and Company Details */}
-            <div className="flex items-center justify-between border-b pb-6">
-              <img 
-                src="/lovable-uploads/997d747f-2d61-41ec-9dd2-289eca9c3976.png" 
-                alt="LuckyBird's Logo" 
-                className="h-16 object-contain"
-              />
+            <div className="flex items-start justify-between border-b pb-6">
+              <div className="flex flex-col items-start">
+                <img 
+                  src="/lovable-uploads/35d5de7b-23b9-4504-a609-8dc8d8d07555.png" 
+                  alt="LuckyBird's Logo" 
+                  className="h-24 w-24 object-contain mb-4"
+                />
+                <h1 className="text-2xl font-bold">LuckyBird's Payroll</h1>
+              </div>
               <div className="text-right">
-                <h1 className="text-2xl font-bold mb-2">LuckyBird's Payroll</h1>
                 <p className="text-muted-foreground">123 Business Street, Suite 100</p>
                 <p className="text-muted-foreground">Los Angeles, CA 90012</p>
                 <p className="text-muted-foreground">Tel: (555) 123-4567</p>
