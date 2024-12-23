@@ -5,19 +5,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { PayPeriod } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { PayPeriod } from "@/lib/types";
+import { CalendarIcon } from "lucide-react";
+import { PayPeriodSelect } from "./PayPeriodSelect";
+import { SavePayPeriod } from "./SavePayPeriod";
 
 interface DateRangePickerProps {
   startDate?: Date;
@@ -26,7 +19,7 @@ interface DateRangePickerProps {
   onEndDateChange: (date?: Date) => void;
   payPeriods: PayPeriod[];
   selectedPayPeriod: string | null;
-  onPayPeriodSelect: (id: string | null) => void;
+  onPayPeriodSelect: (id: string) => void;
   onSavePayPeriod: (name: string) => void;
   onDeletePayPeriod: (id: string) => void;
 }
@@ -42,27 +35,13 @@ export function DateRangePicker({
   onSavePayPeriod,
   onDeletePayPeriod,
 }: DateRangePickerProps) {
-  const [newPayPeriodName, setNewPayPeriodName] = useState("");
-  const [showSaveInput, setShowSaveInput] = useState(false);
-
-  const handleSave = () => {
-    if (newPayPeriodName.trim()) {
-      onSavePayPeriod(newPayPeriodName.trim());
-      setNewPayPeriodName("");
-      setShowSaveInput(false);
-    }
-  };
-
-  const handleDelete = (periodId: string) => {
-    onDeletePayPeriod(periodId);
-  };
-
   return (
     <div className="flex flex-wrap gap-4 items-center">
       <div className="flex-1 min-w-[200px]">
-        <Select
-          value={selectedPayPeriod || ""}
-          onValueChange={(value) => {
+        <PayPeriodSelect
+          payPeriods={payPeriods}
+          selectedPayPeriod={selectedPayPeriod}
+          onPayPeriodSelect={(value) => {
             const period = payPeriods.find((p) => p.id === value);
             if (period) {
               onStartDateChange(period.startDate);
@@ -70,32 +49,8 @@ export function DateRangePicker({
               onPayPeriodSelect(value);
             }
           }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select pay period" />
-          </SelectTrigger>
-          <SelectContent>
-            {payPeriods.map((period) => (
-              <div key={period.id} className="flex items-center justify-between p-2">
-                <SelectItem 
-                  value={period.id}
-                  className="flex-1"
-                >
-                  {period.name}
-                </SelectItem>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 ml-2 hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={() => handleDelete(period.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </SelectContent>
-        </Select>
+          onDeletePayPeriod={onDeletePayPeriod}
+        />
       </div>
 
       <div className="flex items-center gap-2">
@@ -146,36 +101,7 @@ export function DateRangePicker({
         </Popover>
       </div>
 
-      <div className="flex items-center gap-2">
-        {showSaveInput ? (
-          <>
-            <Input
-              placeholder="Enter pay period name"
-              value={newPayPeriodName}
-              onChange={(e) => setNewPayPeriodName(e.target.value)}
-              className="w-48"
-            />
-            <Button onClick={handleSave}>Save</Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowSaveInput(false);
-                setNewPayPeriodName("");
-              }}
-            >
-              Cancel
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="outline"
-            onClick={() => setShowSaveInput(true)}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" /> Save Period
-          </Button>
-        )}
-      </div>
+      <SavePayPeriod onSavePayPeriod={onSavePayPeriod} />
     </div>
   );
 }
