@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -13,10 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
-import { format } from "date-fns";
 import { formatCurrency } from "@/lib/calculations";
-import { SHIFT_TYPES } from "@/lib/constants";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -55,17 +49,6 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     );
   });
 
-  const calculateDailyEarnings = (entry: AttendanceEntry) => {
-    const shiftType = SHIFT_TYPES.find(st => st.type === entry.shiftType);
-    const multiplier = shiftType?.multiplier || 1;
-    return entry.totalHours * entry.hourlyRate * multiplier;
-  };
-
-  const totalEarnings = filteredEntries.reduce(
-    (sum, entry) => sum + calculateDailyEarnings(entry),
-    0
-  );
-
   const totalWorkingHours = filteredEntries.reduce(
     (sum, entry) => sum + entry.totalHours,
     0
@@ -83,34 +66,80 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     .filter(entry => entry.shiftType.includes('Leave'))
     .length;
 
-  const directoryEntry = directoryData.find(entry => entry.name === agentName);
+  const totalEarnings = filteredEntries.reduce(
+    (sum, entry) => sum + (entry.totalHours * entry.hourlyRate),
+    0
+  );
+
+  const directoryEntry = directoryData.find(entry => 
+    entry.name.toLowerCase().includes(agentName.toLowerCase())
+  );
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl">{agentName}</CardTitle>
+      <div className="p-6 border-b">
+        <h2 className="text-2xl font-bold">{directoryEntry?.name || agentName}</h2>
         {directoryEntry && (
-          <p className="text-md text-muted-foreground font-medium">
-            {directoryEntry.position}
-          </p>
+          <p className="text-muted-foreground">{directoryEntry.position}</p>
         )}
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Time In</TableHead>
-              <TableHead>Time Out</TableHead>
-              <TableHead>Shift Type</TableHead>
-              <TableHead className="text-right">Hourly Rate</TableHead>
-              <TableHead className="text-right">Daily Earnings</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEntries.map((entry, index) => {
-              const dailyEarnings = calculateDailyEarnings(entry);
-              return (
+      </div>
+
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">
+                  {totalWorkingHours.toFixed(2)}h
+                </div>
+                <p className="text-sm text-muted-foreground">Total Hours</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">
+                  {totalOTHours.toFixed(2)}h
+                </div>
+                <p className="text-sm text-muted-foreground">Total OT Hours</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">
+                  {holidayHours.toFixed(2)}h
+                </div>
+                <p className="text-sm text-muted-foreground">Holiday Hours</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">{leaveDays}</div>
+                <p className="text-sm text-muted-foreground">Leave Days</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">
+                  {formatCurrency(totalEarnings)}
+                </div>
+                <p className="text-sm text-muted-foreground">Total Earnings</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Time In</TableHead>
+                <TableHead>Time Out</TableHead>
+                <TableHead>Shift Type</TableHead>
+                <TableHead className="text-right">Hourly Rate</TableHead>
+                <TableHead className="text-right">Daily Earnings</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredEntries.map((entry, index) => (
                 <TableRow key={index}>
                   <TableCell>{format(new Date(entry.date), "PP")}</TableCell>
                   <TableCell>{entry.timeIn}</TableCell>
@@ -120,53 +149,12 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
                     {formatCurrency(entry.hourlyRate)}
                   </TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(dailyEarnings)}
+                    {formatCurrency(entry.totalHours * entry.hourlyRate)}
                   </TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">
-                {totalWorkingHours.toFixed(2)}h
-              </div>
-              <p className="text-sm text-muted-foreground">Total Hours</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">
-                {totalOTHours.toFixed(2)}h
-              </div>
-              <p className="text-sm text-muted-foreground">Total OT Hours</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">
-                {holidayHours.toFixed(2)}h
-              </div>
-              <p className="text-sm text-muted-foreground">Holiday Hours</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{leaveDays}</div>
-              <p className="text-sm text-muted-foreground">Leave Days</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">
-                {formatCurrency(totalEarnings)}
-              </div>
-              <p className="text-sm text-muted-foreground">Total Earnings</p>
-            </CardContent>
-          </Card>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
