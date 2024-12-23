@@ -75,7 +75,10 @@ export function AgentList({
   useEffect(() => {
     if (startDate && endDate) {
       const savedEntries = localStorage.getItem('attendanceEntries');
-      if (!savedEntries) return;
+      if (!savedEntries) {
+        setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
+        return;
+      }
 
       const entries: AttendanceEntry[] = JSON.parse(savedEntries).map((entry: any) => ({
         ...entry,
@@ -101,6 +104,7 @@ export function AgentList({
         }))
       );
     } else {
+      // If no date range is selected, show all agents but mark them as having no entries
       setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
     }
   }, [startDate, endDate]);
@@ -114,7 +118,7 @@ export function AgentList({
         <div className="space-y-2">
           {agents.length > 0 ? (
             agents
-              .filter(agent => agent.hasEntries)
+              .filter(agent => agent.hasEntries || (!startDate && !endDate))
               .map((agent) => (
                 <button
                   key={agent.fullName}
