@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { Invoice } from "./components/Invoice";
+import { SharedAgentHours } from "./components/SharedAgentHours";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/invoice/:recordId" element={<Invoice />} />
+          <Route path="/shared/agent/:agentId" element={<SharedAgentHours />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

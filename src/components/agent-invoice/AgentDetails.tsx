@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AgentAttendanceTable } from "./AgentAttendanceTable";
 import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
+import { Link, Copy } from "lucide-react";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -15,6 +17,7 @@ interface AgentDetailsProps {
 export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -74,6 +77,33 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     entry.name.toLowerCase() === agentName.toLowerCase()
   );
 
+  const handleGenerateLink = () => {
+    // Create a base64 encoded string of agent info
+    const agentInfo = `${agentName}|${directoryEntry?.position || ''}`;
+    const encodedInfo = btoa(agentInfo);
+    
+    // Generate absolute URL
+    const baseUrl = window.location.origin;
+    const shareableUrl = `${baseUrl}/shared/agent/${encodedInfo}`;
+    
+    setGeneratedLink(shareableUrl);
+    
+    toast({
+      title: "Link Generated",
+      description: "Shareable link has been generated successfully",
+    });
+  };
+
+  const handleCopyLink = () => {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink);
+      toast({
+        title: "Success",
+        description: "Link copied to clipboard",
+      });
+    }
+  };
+
   if (!startDate || !endDate) {
     return (
       <Card>
@@ -121,6 +151,19 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
 
       <CardContent className="p-6">
         <div className="space-y-6">
+          <div className="flex justify-end space-x-4">
+            <Button onClick={handleGenerateLink} className="gap-2">
+              <Link className="h-4 w-4" />
+              Generate Shareable Link
+            </Button>
+            {generatedLink && (
+              <Button variant="outline" onClick={handleCopyLink} className="gap-2">
+                <Copy className="h-4 w-4" />
+                Copy Link
+              </Button>
+            )}
+          </div>
+
           <AgentSummaryCards filteredEntries={filteredEntries} />
           <AgentAttendanceTable entries={filteredEntries} />
         </div>
