@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DirectoryEntry, AttendanceEntry } from "@/lib/types";
+import { isWithinInterval } from "date-fns";
 
 interface AgentListProps {
   startDate?: Date;
@@ -47,7 +48,7 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
   }, []);
 
   useEffect(() => {
-    if (startDate && endDate && directoryData.length > 0) {
+    if (startDate && endDate) {
       // Load attendance entries
       const savedEntries = localStorage.getItem('attendanceEntries');
       if (savedEntries) {
@@ -59,7 +60,7 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
         // Filter entries within date range
         const filteredEntries = entries.filter(entry => {
           const entryDate = new Date(entry.date);
-          return entryDate >= startDate && entryDate <= endDate;
+          return isWithinInterval(entryDate, { start: startDate, end: endDate });
         });
 
         // Get unique agent names from filtered entries
