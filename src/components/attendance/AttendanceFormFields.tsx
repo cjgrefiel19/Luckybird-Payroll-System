@@ -20,8 +20,7 @@ import { cn } from "@/lib/utils";
 import { SHIFT_TYPES } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { useEffect } from "react";
-import { DirectoryEntry } from "@/lib/types";
+import { TeamMember } from "@/lib/types";
 
 const formSchema = z.object({
   date: z.date(),
@@ -35,16 +34,10 @@ type FormFields = z.infer<typeof formSchema>;
 
 interface AttendanceFormFieldsProps {
   form: UseFormReturn<FormFields>;
-  selectedAgent: DirectoryEntry | undefined;
-  directoryData: DirectoryEntry[];
+  teamMembers: TeamMember[];
 }
 
-export function AttendanceFormFields({ form, selectedAgent, directoryData }: AttendanceFormFieldsProps) {
-  // Log current values for debugging
-  console.log('Directory Data in Form:', directoryData);
-  console.log('Selected Agent:', selectedAgent);
-  console.log('Current Form Values:', form.getValues());
-
+export function AttendanceFormFields({ form, teamMembers }: AttendanceFormFieldsProps) {
   return (
     <>
       <FormField
@@ -105,11 +98,11 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
                 </SelectTrigger>
               </FormControl>
               <SelectContent 
-                className="bg-white border rounded-md shadow-lg z-50"
+                className="bg-white border rounded-md shadow-lg"
                 position="popper"
                 sideOffset={5}
               >
-                {directoryData.map((member) => (
+                {teamMembers.map((member) => (
                   <SelectItem 
                     key={member.name} 
                     value={member.name}
@@ -164,7 +157,7 @@ export function AttendanceFormFields({ form, selectedAgent, directoryData }: Att
                   <SelectValue placeholder="Select shift type" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-white border rounded-md shadow-lg z-50">
+              <SelectContent className="bg-white border rounded-md shadow-lg">
                 {SHIFT_TYPES.map((shift) => (
                   <SelectItem 
                     key={shift.type} 
