@@ -74,13 +74,13 @@ export function Dashboard() {
       toast({
         title: "Error",
         description: "Please select a date range first",
+        variant: "destructive",
       });
       return;
     }
 
     const recordId = crypto.randomUUID();
-    const baseUrl = window.location.origin;
-    const invoiceUrl = `${baseUrl}/invoice/${recordId}`;
+    const invoiceUrl = `/invoice/${recordId}`;
 
     // Save record to localStorage
     const savedRecords = localStorage.getItem('payrollRecords') || '[]';
@@ -88,13 +88,13 @@ export function Dashboard() {
     records.push({
       id: recordId,
       payPeriod: {
-        startDate,
-        endDate,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
       },
       generatedLink: invoiceUrl,
       status: 'Pending',
       comments: '',
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
     localStorage.setItem('payrollRecords', JSON.stringify(records));
 
@@ -103,8 +103,9 @@ export function Dashboard() {
       description: "Shareable link generated and saved to Payroll Records",
     });
 
-    // Open invoice in new tab
-    window.open(invoiceUrl, '_blank');
+    // Open invoice in new tab with absolute URL
+    const baseUrl = window.location.origin;
+    window.open(baseUrl + invoiceUrl, '_blank');
   };
 
   return (
