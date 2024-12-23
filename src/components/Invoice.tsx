@@ -4,29 +4,33 @@ import { Button } from "./ui/button";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useToast } from "./ui/use-toast";
+import { useParams } from "react-router-dom";
 
-interface InvoiceProps {
-  startDate?: Date;
-  endDate?: Date;
-  recordId: string;
-}
-
-export function Invoice({ startDate, endDate, recordId }: InvoiceProps) {
+export function Invoice() {
+  const { recordId } = useParams();
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
   const [isPaid, setIsPaid] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!recordId) return;
+
     const savedRecords = localStorage.getItem('payrollRecords');
     if (savedRecords) {
       const records = JSON.parse(savedRecords);
       const record = records.find((r: any) => r.id === recordId);
       if (record) {
+        setStartDate(new Date(record.payPeriod.startDate));
+        setEndDate(new Date(record.payPeriod.endDate));
         setIsPaid(record.status === 'Paid');
       }
     }
   }, [recordId]);
 
   const handleMarkAsPaid = () => {
+    if (!recordId) return;
+    
     setIsPaid(true);
     
     // Update record status in localStorage
@@ -45,15 +49,17 @@ export function Invoice({ startDate, endDate, recordId }: InvoiceProps) {
     });
   };
 
+  if (!startDate || !endDate) {
+    return <div className="p-4">Loading invoice data...</div>;
+  }
+
   return (
     <div className="p-4 space-y-4 relative">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Payroll Invoice</h1>
-        {startDate && endDate && (
-          <p className="text-lg">
-            Pay Period: {format(startDate, "PP")} - {format(endDate, "PP")}
-          </p>
-        )}
+        <p className="text-lg">
+          Pay Period: {format(startDate, "PP")} - {format(endDate, "PP")}
+        </p>
       </div>
 
       {isPaid && (
