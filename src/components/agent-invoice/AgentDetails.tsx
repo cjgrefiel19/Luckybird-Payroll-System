@@ -7,6 +7,7 @@ import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AttendanceEntry } from "@/lib/types";
 import { Input } from "../ui/input";
 import { Link, Copy } from "lucide-react";
+import { isWithinInterval } from "date-fns";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -16,7 +17,6 @@ interface AgentDetailsProps {
 
 export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
-  const [accepted, setAccepted] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -32,8 +32,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
         const entryDate = new Date(entry.date);
         return (
           entry.agentName === agentName &&
-          entryDate >= startDate &&
-          entryDate <= endDate
+          isWithinInterval(entryDate, { start: startDate, end: endDate })
         );
       });
 
@@ -51,11 +50,8 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
       return;
     }
 
-    // Create a unique identifier for the agent and their position
     const encodedAgentInfo = btoa(`${agentName}|${startDate.toISOString()}|${endDate.toISOString()}`);
     const sharedUrl = `/shared/agent/${encodedAgentInfo}`;
-
-    // Generate absolute URL
     const baseUrl = window.location.origin;
     const fullUrl = baseUrl + sharedUrl;
     setGeneratedLink(fullUrl);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { AttendanceEntry } from "@/lib/types";
 import { isWithinInterval } from "date-fns";
 
 interface AgentListProps {
@@ -11,50 +11,39 @@ interface AgentListProps {
   selectedAgent: string | null;
 }
 
-interface AgentInfo {
-  fullName: string;
-  position: string;
-  firstName: string;
-  hasEntries: boolean;
-}
-
 export function AgentList({ 
   startDate, 
   endDate, 
   onSelectAgent, 
   selectedAgent 
 }: AgentListProps) {
-  const [agents, setAgents] = useState<AgentInfo[]>([]);
+  const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [acceptedInvoices, setAcceptedInvoices] = useState<{ [key: string]: boolean }>({});
 
-  // Load directory data
+  // Load attendance entries
   useEffect(() => {
-    const loadAgentInfo = () => {
-      const savedDirectory = localStorage.getItem('directoryData');
-      if (!savedDirectory) {
-        console.log('No directory data found');
-        return;
-      }
-
-      try {
-        const directoryData: DirectoryEntry[] = JSON.parse(savedDirectory);
-        console.log('Loaded directory data:', directoryData);
-        
-        const agentInfo: AgentInfo[] = directoryData.map(entry => ({
-          fullName: entry.name,
-          position: entry.position,
-          firstName: entry.name.split(' ')[0],
-          hasEntries: false
-        }));
-        
-        setAgents(agentInfo);
-      } catch (error) {
-        console.error('Error parsing directory data:', error);
-      }
-    };
-
-    loadAgentInfo();
+    const savedEntries = localStorage.getItem('attendanceEntries');
+    if (savedEntries) {
+      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
+        ...entry,
+        date: new Date(entry.date)
+      }));
+      setEntries(parsedEntries);
+    }
   }, []);
+
+  // Get unique agents with entries in the date range
+  const getAgentsInDateRange = () => {
+    if (!startDate || !endDate || !entries.length) return [];
+
+    const filteredEntries = entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return isWithinInterval(entryDate, { start: startDate, end: endDate });
+    });
+
+    const uniqueAgents = Array.from(new Set(filteredEntries.map(entry => entry.agentName)));
+    return uniqueAgents;
+  };
 
   // Load accepted invoices status
   useEffect(() => {
@@ -80,50 +69,7 @@ export function AgentList({
     loadAcceptedStatus();
   }, []);
 
-  // Update agents with attendance data
-  useEffect(() => {
-    if (!agents.length) return;
-
-    if (startDate && endDate) {
-      const savedEntries = localStorage.getItem('attendanceEntries');
-      console.log('Loaded attendance entries:', savedEntries);
-      
-      if (!savedEntries) {
-        setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
-        return;
-      }
-
-      try {
-        const entries: AttendanceEntry[] = JSON.parse(savedEntries).map((entry: any) => ({
-          ...entry,
-          date: new Date(entry.date),
-        }));
-
-        // Filter entries within date range
-        const filteredEntries = entries.filter(entry => {
-          const entryDate = new Date(entry.date);
-          return isWithinInterval(entryDate, { start: startDate, end: endDate });
-        });
-
-        console.log('Filtered entries:', filteredEntries);
-
-        // Update agents with hasEntries flag based on first name match
-        setAgents(prevAgents => 
-          prevAgents.map(agent => ({
-            ...agent,
-            hasEntries: filteredEntries.some(entry => 
-              entry.agentName.split(' ')[0].toLowerCase() === agent.firstName.toLowerCase()
-            )
-          }))
-        );
-      } catch (error) {
-        console.error('Error processing attendance entries:', error);
-      }
-    } else {
-      // If no date range is selected, show all agents
-      setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
-    }
-  }, [startDate, endDate, agents.length]);
+  const agents = getAgentsInDateRange();
 
   return (
     <Card>
@@ -133,34 +79,29 @@ export function AgentList({
       <CardContent>
         <div className="space-y-2">
           {agents.length > 0 ? (
-            agents
-              .filter(agent => agent.hasEntries || (!startDate && !endDate))
-              .map((agent) => (
-                <button
-                  key={agent.fullName}
-                  onClick={() => onSelectAgent(agent.fullName)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    selectedAgent === agent.fullName
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{agent.fullName}</div>
-                      <Badge variant={acceptedInvoices[agent.fullName] ? "success" : "secondary"}>
-                        {acceptedInvoices[agent.fullName] ? "Accepted" : "Pending"}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {agent.position}
-                    </div>
+            agents.map((agentName) => (
+              <button
+                key={agentName}
+                onClick={() => onSelectAgent(agentName)}
+                className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  selectedAgent === agentName
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{agentName}</div>
+                    <Badge variant={acceptedInvoices[agentName] ? "success" : "secondary"}>
+                      {acceptedInvoices[agentName] ? "Accepted" : "Pending"}
+                    </Badge>
                   </div>
-                </button>
-              ))
+                </div>
+              </button>
+            ))
           ) : (
             <div className="text-center text-muted-foreground py-4">
-              No agents found
+              {startDate && endDate ? "No agents found in selected date range" : "Select a date range"}
             </div>
           )}
         </div>
