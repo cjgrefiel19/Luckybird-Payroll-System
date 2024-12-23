@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { TEAM_MEMBERS } from "@/lib/constants";
 
 interface AgentListProps {
@@ -12,15 +12,22 @@ interface AgentListProps {
 
 export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: AgentListProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
+    const savedDirectory = localStorage.getItem('directoryData');
+    
     if (savedEntries) {
       const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
         ...entry,
         date: new Date(entry.date)
       }));
       setEntries(parsedEntries);
+    }
+    
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
     }
   }, []);
 
@@ -40,7 +47,9 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
       <CardContent>
         <div className="space-y-2">
           {uniqueAgents.map((agentName) => {
-            const member = TEAM_MEMBERS.find(m => m.name === agentName);
+            const directoryEntry = directoryData.find(entry => entry.name === agentName);
+            const position = directoryEntry?.position || "Position not specified";
+            
             return (
               <button
                 key={agentName}
@@ -52,11 +61,9 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
                 }`}
               >
                 <div className="font-medium">{agentName}</div>
-                {member && (
-                  <div className="text-sm text-muted-foreground">
-                    {member.position || "Position not specified"}
-                  </div>
-                )}
+                <div className="text-sm text-muted-foreground">
+                  {position}
+                </div>
               </button>
             );
           })}

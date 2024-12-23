@@ -13,9 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/calculations";
+import { SHIFT_TYPES } from "@/lib/constants";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -25,15 +26,22 @@ interface AgentDetailsProps {
 
 export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
+    const savedDirectory = localStorage.getItem('directoryData');
+    
     if (savedEntries) {
       const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
         ...entry,
         date: new Date(entry.date)
       }));
       setEntries(parsedEntries);
+    }
+    
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
     }
   }, []);
 
@@ -47,8 +55,14 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     );
   });
 
+  const calculateDailyEarnings = (entry: AttendanceEntry) => {
+    const shiftType = SHIFT_TYPES.find(st => st.type === entry.shiftType);
+    const multiplier = shiftType?.multiplier || 1;
+    return entry.totalHours * entry.hourlyRate * multiplier;
+  };
+
   const totalEarnings = filteredEntries.reduce(
-    (sum, entry) => sum + entry.dailyEarnings,
+    (sum, entry) => sum + calculateDailyEarnings(entry),
     0
   );
 
@@ -64,10 +78,15 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     .filter(entry => entry.shiftType.includes('Leave'))
     .length;
 
+  const directoryEntry = directoryData.find(entry => entry.name === agentName);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{agentName}</CardTitle>
+        {directoryEntry && (
+          <p className="text-sm text-muted-foreground">{directoryEntry.position}</p>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <Table>
@@ -82,20 +101,23 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredEntries.map((entry, index) => (
-              <TableRow key={index}>
-                <TableCell>{format(new Date(entry.date), "PP")}</TableCell>
-                <TableCell>{entry.timeIn}</TableCell>
-                <TableCell>{entry.timeOut}</TableCell>
-                <TableCell>{entry.shiftType}</TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(entry.hourlyRate)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(entry.dailyEarnings)}
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredEntries.map((entry, index) => {
+              const dailyEarnings = calculateDailyEarnings(entry);
+              return (
+                <TableRow key={index}>
+                  <TableCell>{format(new Date(entry.date), "PP")}</TableCell>
+                  <TableCell>{entry.timeIn}</TableCell>
+                  <TableCell>{entry.timeOut}</TableCell>
+                  <TableCell>{entry.shiftType}</TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(entry.hourlyRate)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(dailyEarnings)}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
 

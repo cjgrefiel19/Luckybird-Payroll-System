@@ -57,3 +57,8 @@ export interface PayrollRecord {
   comments: string;
   createdAt: Date;
 }
+
+export interface DirectoryEntry {
+  name: string;
+  position: string;
+}
