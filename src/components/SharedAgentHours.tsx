@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
 import { AgentAttendanceTable } from "./agent-invoice/AgentAttendanceTable";
 import { AttendanceEntry } from "@/lib/types";
 import { format } from "date-fns";
-import { Check, FileText } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import html2pdf from 'html2pdf.js';
+import { InvoiceWatermark } from "./agent-invoice/InvoiceWatermark";
+import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
+import { InvoiceAgentDetails } from "./agent-invoice/InvoiceAgentDetails";
+import { InvoiceSummary } from "./agent-invoice/InvoiceSummary";
+import { InvoiceActions } from "./agent-invoice/InvoiceActions";
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
@@ -71,7 +74,6 @@ export function SharedAgentHours() {
     if (!payPeriod) return;
     
     setAccepted(true);
-    // Save acceptance status with date range
     if (agentId) {
       const encodedAcceptanceKey = btoa(`${agentName}|${position}|${format(payPeriod.start, 'yyyy-MM-dd')}|${format(payPeriod.end, 'yyyy-MM-dd')}`);
       localStorage.setItem(`invoice-acceptance-${encodedAcceptanceKey}`, 'true');
@@ -106,75 +108,28 @@ export function SharedAgentHours() {
 
   return (
     <div className="container mx-auto py-8 relative">
-      {accepted && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50 overflow-hidden">
-          <div className="transform rotate-[-35deg] text-red-500/20 text-[40vw] font-black whitespace-nowrap select-none">
-            PAID
-          </div>
-        </div>
-      )}
+      <InvoiceWatermark show={accepted} />
       
       <Card>
         <CardContent className="p-6">
           <div id="invoice-content" className="space-y-8">
-            {/* Header with Logo and Company Details */}
-            <div className="flex items-start justify-between border-b pb-6">
-              <div className="flex flex-col items-start">
-                <img 
-                  src="/lovable-uploads/35d5de7b-23b9-4504-a609-8dc8d8d07555.png" 
-                  alt="LuckyBird Logo" 
-                  className="h-24 w-24 object-contain mb-4"
-                />
-                <h1 className="text-2xl font-bold">LuckyBird</h1>
-                <div className="text-muted-foreground mt-2">
-                  <p>732 N. Madelia St.</p>
-                  <p>Spokane, WA 99202</p>
-                  <p>+1 (509) 508-2229</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Agent Details and Pay Period */}
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold">{agentName}</h2>
-              <p className="text-lg text-muted-foreground">{position}</p>
-              {payPeriod && (
-                <p className="text-sm text-muted-foreground">
-                  Pay Period: {format(payPeriod.start, "PPP")} - {format(payPeriod.end, "PPP")}
-                </p>
-              )}
-            </div>
-
-            {/* Summary Box */}
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">Summary</h3>
-              <p>Total Working Hours: {totalHours.toFixed(2)}</p>
-            </div>
-
-            {/* Attendance Table */}
+            <InvoiceHeader logo="/lovable-uploads/35d5de7b-23b9-4504-a609-8dc8d8d07555.png" />
+            <InvoiceAgentDetails 
+              agentName={agentName}
+              position={position}
+              payPeriod={payPeriod}
+            />
+            <InvoiceSummary totalHours={totalHours} />
             <div className="overflow-x-auto">
               <AgentAttendanceTable entries={entries} />
             </div>
           </div>
 
-          <div className="mt-6 flex gap-4 justify-end">
-            <Button
-              onClick={handleAccept}
-              disabled={accepted}
-              className="gap-2"
-            >
-              <Check className="h-4 w-4" />
-              {accepted ? "Accepted" : "Accept"}
-            </Button>
-            <Button
-              onClick={handleDownloadPDF}
-              variant="outline"
-              className="gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Download PDF
-            </Button>
-          </div>
+          <InvoiceActions 
+            onAccept={handleAccept}
+            onDownload={handleDownloadPDF}
+            accepted={accepted}
+          />
         </CardContent>
       </Card>
     </div>
