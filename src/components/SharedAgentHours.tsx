@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
+import { Button } from "./ui/button";
 import { AgentAttendanceTable } from "./agent-invoice/AgentAttendanceTable";
 import { AttendanceEntry } from "@/lib/types";
 import { format } from "date-fns";
+import { Check, FileText } from "lucide-react";
+import { useToast } from "./ui/use-toast";
+import html2pdf from 'html2pdf.js';
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
@@ -12,6 +16,8 @@ export function SharedAgentHours() {
   const [position, setPosition] = useState("");
   const [totalHours, setTotalHours] = useState(0);
   const [payPeriod, setPayPeriod] = useState<{ start: Date; end: Date } | null>(null);
+  const [accepted, setAccepted] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!agentId) return;
@@ -51,6 +57,32 @@ export function SharedAgentHours() {
     setPosition(decodedInfo[1]);
   }, [agentId]);
 
+  const handleAccept = () => {
+    setAccepted(true);
+    toast({
+      title: "Invoice Accepted",
+      description: "You have successfully accepted this invoice.",
+    });
+  };
+
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('invoice-content');
+    const opt = {
+      margin: 1,
+      filename: `${agentName}-invoice.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      toast({
+        title: "PDF Downloaded",
+        description: "Your invoice has been downloaded successfully.",
+      });
+    });
+  };
+
   if (!agentId) {
     return <div>Invalid link</div>;
   }
@@ -59,24 +91,45 @@ export function SharedAgentHours() {
     <div className="container mx-auto py-8">
       <Card>
         <CardContent className="p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold">{agentName}</h2>
-            <p className="text-muted-foreground">{position}</p>
-          </div>
-
-          <div className="space-y-6">
-            {payPeriod && (
-              <div className="text-sm text-muted-foreground">
-                Pay Period: {format(payPeriod.start, "PPP")} - {format(payPeriod.end, "PPP")}
-              </div>
-            )}
-
-            <div className="bg-muted p-4 rounded-lg mb-4">
-              <h3 className="font-semibold mb-2">Summary</h3>
-              <p>Total Working Hours: {totalHours.toFixed(2)}</p>
+          <div id="invoice-content">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">{agentName}</h2>
+              <p className="text-muted-foreground">{position}</p>
             </div>
 
-            <AgentAttendanceTable entries={entries} />
+            <div className="space-y-6">
+              {payPeriod && (
+                <div className="text-sm text-muted-foreground">
+                  Pay Period: {format(payPeriod.start, "PPP")} - {format(payPeriod.end, "PPP")}
+                </div>
+              )}
+
+              <div className="bg-muted p-4 rounded-lg mb-4">
+                <h3 className="font-semibold mb-2">Summary</h3>
+                <p>Total Working Hours: {totalHours.toFixed(2)}</p>
+              </div>
+
+              <AgentAttendanceTable entries={entries} />
+            </div>
+          </div>
+
+          <div className="mt-6 flex gap-4 justify-end">
+            <Button
+              onClick={handleAccept}
+              disabled={accepted}
+              className="gap-2"
+            >
+              <Check className="h-4 w-4" />
+              {accepted ? "Accepted" : "Accept"}
+            </Button>
+            <Button
+              onClick={handleDownloadPDF}
+              variant="outline"
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Download PDF
+            </Button>
           </div>
         </CardContent>
       </Card>
