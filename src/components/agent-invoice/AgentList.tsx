@@ -15,6 +15,7 @@ interface AgentInfo {
   fullName: string;
   position: string;
   firstName: string;
+  hasEntries: boolean;
 }
 
 export function AgentList({ 
@@ -26,7 +27,7 @@ export function AgentList({
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [acceptedInvoices, setAcceptedInvoices] = useState<{ [key: string]: boolean }>({});
 
-  // Load directory data and match with attendance entries
+  // Load directory data
   useEffect(() => {
     const loadAgentInfo = () => {
       const savedDirectory = localStorage.getItem('directoryData');
@@ -36,7 +37,8 @@ export function AgentList({
       const agentInfo: AgentInfo[] = directoryData.map(entry => ({
         fullName: entry.name,
         position: entry.position,
-        firstName: entry.name.split(' ')[0]
+        firstName: entry.name.split(' ')[0],
+        hasEntries: false
       }));
 
       setAgents(agentInfo);
@@ -69,7 +71,7 @@ export function AgentList({
     loadAcceptedStatus();
   }, []);
 
-  // Filter agents based on attendance entries within date range
+  // Update agents with attendance data
   useEffect(() => {
     if (startDate && endDate) {
       const savedEntries = localStorage.getItem('attendanceEntries');
@@ -86,16 +88,20 @@ export function AgentList({
         return isWithinInterval(entryDate, { start: startDate, end: endDate });
       });
 
-      // Get unique agent names from filtered entries and match with directory
-      const activeAgentNames = new Set(filteredEntries.map(entry => {
-        const firstName = entry.agentName.split(' ')[0];
-        return firstName;
-      }));
+      // Create a set of first names from filtered entries
+      const activeFirstNames = new Set(
+        filteredEntries.map(entry => entry.agentName.split(' ')[0])
+      );
 
-      // Filter agents list to only include those with entries in the date range
-      setAgents(prev => prev.filter(agent => activeAgentNames.has(agent.firstName)));
+      // Update agents with hasEntries flag
+      setAgents(prevAgents => 
+        prevAgents.map(agent => ({
+          ...agent,
+          hasEntries: activeFirstNames.has(agent.firstName)
+        }))
+      );
     } else {
-      setAgents([]);
+      setAgents(prev => prev.map(agent => ({ ...agent, hasEntries: false })));
     }
   }, [startDate, endDate]);
 
@@ -107,29 +113,31 @@ export function AgentList({
       <CardContent>
         <div className="space-y-2">
           {agents.length > 0 ? (
-            agents.map((agent) => (
-              <button
-                key={agent.fullName}
-                onClick={() => onSelectAgent(agent.fullName)}
-                className={`w-full text-left p-3 rounded-lg transition-colors ${
-                  selectedAgent === agent.fullName
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium">{agent.fullName}</div>
-                    <Badge variant={acceptedInvoices[agent.fullName] ? "success" : "secondary"}>
-                      {acceptedInvoices[agent.fullName] ? "Accepted" : "Pending"}
-                    </Badge>
+            agents
+              .filter(agent => agent.hasEntries)
+              .map((agent) => (
+                <button
+                  key={agent.fullName}
+                  onClick={() => onSelectAgent(agent.fullName)}
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                    selectedAgent === agent.fullName
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">{agent.fullName}</div>
+                      <Badge variant={acceptedInvoices[agent.fullName] ? "success" : "secondary"}>
+                        {acceptedInvoices[agent.fullName] ? "Accepted" : "Pending"}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {agent.position}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {agent.position}
-                  </div>
-                </div>
-              </button>
-            ))
+                </button>
+              ))
           ) : (
             <div className="text-center text-muted-foreground py-4">
               {startDate && endDate 
