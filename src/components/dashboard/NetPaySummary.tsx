@@ -81,29 +81,34 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
     );
   };
 
-  const summaryData = TEAM_MEMBERS.map((member) => {
-    const totalEarnings = filteredEntries
-      .filter((entry) => entry.agentName === member.name)
-      .reduce((sum, entry) => sum + entry.dailyEarnings, 0);
+  // Get unique agent names from filtered entries
+  const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
-    const netPayInfo = netPayData.find(
-      (data) => data.agentName === member.name
-    ) || {
-      deductions: 0,
-      reimbursements: 0,
-    };
+  const summaryData = TEAM_MEMBERS
+    .filter(member => activeAgents.includes(member.name))
+    .map((member) => {
+      const totalEarnings = filteredEntries
+        .filter((entry) => entry.agentName === member.name)
+        .reduce((sum, entry) => sum + entry.dailyEarnings, 0);
 
-    const netPay =
-      totalEarnings + netPayInfo.reimbursements - netPayInfo.deductions;
+      const netPayInfo = netPayData.find(
+        (data) => data.agentName === member.name
+      ) || {
+        deductions: 0,
+        reimbursements: 0,
+      };
 
-    return {
-      name: member.name,
-      totalEarnings,
-      deductions: netPayInfo.deductions,
-      reimbursements: netPayInfo.reimbursements,
-      netPay,
-    };
-  });
+      const netPay =
+        totalEarnings + netPayInfo.reimbursements - netPayInfo.deductions;
+
+      return {
+        name: member.name,
+        totalEarnings,
+        deductions: netPayInfo.deductions,
+        reimbursements: netPayInfo.reimbursements,
+        netPay,
+      };
+    });
 
   return (
     <Card>
