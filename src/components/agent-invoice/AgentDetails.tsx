@@ -4,6 +4,7 @@ import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AgentAttendanceTable } from "./AgentAttendanceTable";
 import { isWithinInterval } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -14,23 +15,40 @@ interface AgentDetailsProps {
 export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
     const savedDirectory = localStorage.getItem('directoryData');
     
     if (savedEntries) {
-      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
-        ...entry,
-        date: new Date(entry.date)
-      }));
-      setEntries(parsedEntries);
+      try {
+        const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
+          ...entry,
+          date: new Date(entry.date)
+        }));
+        setEntries(parsedEntries);
+        
+        // Log the number of entries loaded
+        console.log(`Loaded ${parsedEntries.length} total attendance entries`);
+      } catch (error) {
+        console.error('Error parsing attendance entries:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load attendance records",
+          variant: "destructive",
+        });
+      }
     }
     
     if (savedDirectory) {
-      setDirectoryData(JSON.parse(savedDirectory));
+      try {
+        setDirectoryData(JSON.parse(savedDirectory));
+      } catch (error) {
+        console.error('Error parsing directory data:', error);
+      }
     }
-  }, []);
+  }, [toast]);
 
   const filteredEntries = entries.filter((entry) => {
     // First check if the agent name matches (case-insensitive)
@@ -39,14 +57,24 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     // Then check if the date is within range (if dates are provided)
     let withinDateRange = true;
     if (startDate && endDate) {
-      withinDateRange = isWithinInterval(new Date(entry.date), {
+      const entryDate = new Date(entry.date);
+      withinDateRange = isWithinInterval(entryDate, {
         start: startDate,
         end: endDate
       });
     }
     
+    // Log filtering details for debugging
+    if (matchesAgent) {
+      console.log(`Found entry for ${agentName} on ${entry.date}:`, 
+        withinDateRange ? 'within date range' : 'outside date range');
+    }
+    
     return matchesAgent && withinDateRange;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
+  }).sort((a, b) => b.date.getTime() - a.date.getTime()); // Sort by date descending
+
+  // Log filtered results
+  console.log(`Found ${filteredEntries.length} entries for ${agentName} in selected date range`);
 
   const directoryEntry = directoryData.find(entry => 
     entry.name.toLowerCase() === agentName.toLowerCase()
