@@ -17,10 +17,11 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { SHIFT_TYPES, TEAM_MEMBERS } from "@/lib/constants";
+import { SHIFT_TYPES } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
+import { DirectoryEntry } from "@/lib/types";
 
 const formSchema = z.object({
   date: z.date(),
@@ -34,15 +35,27 @@ type FormFields = z.infer<typeof formSchema>;
 
 interface AttendanceFormFieldsProps {
   form: UseFormReturn<FormFields>;
-  selectedAgent: typeof TEAM_MEMBERS[0] | undefined;
+  selectedAgent: DirectoryEntry | undefined;
+  directoryData: DirectoryEntry[];
 }
 
-export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFieldsProps) {
+export function AttendanceFormFields({ form, selectedAgent, directoryData }: AttendanceFormFieldsProps) {
   useEffect(() => {
     if (selectedAgent) {
-      form.setValue("timeIn", selectedAgent.timeIn);
-      form.setValue("timeOut", selectedAgent.timeOut);
-      form.setValue("shiftType", "Regular Shift");
+      const defaultTimes: { [key: string]: { timeIn: string; timeOut: string } } = {
+        "Cherrie Ferrer": { timeIn: "11:00 PM", timeOut: "7:00 AM" },
+        "Chrisjie Grefiel": { timeIn: "11:00 PM", timeOut: "7:00 AM" },
+        "Jobelle Fortuna": { timeIn: "9:00 PM", timeOut: "1:00 AM" },
+        "Mhel Malit": { timeIn: "8:00 PM", timeOut: "5:00 AM" },
+        "Gilbert Condino": { timeIn: "5:00 AM", timeOut: "1:00 PM" },
+      };
+
+      const times = defaultTimes[selectedAgent.name];
+      if (times) {
+        form.setValue("timeIn", times.timeIn);
+        form.setValue("timeOut", times.timeOut);
+        form.setValue("shiftType", "Regular Shift");
+      }
     }
   }, [selectedAgent, form]);
 
@@ -102,7 +115,7 @@ export function AttendanceFormFields({ form, selectedAgent }: AttendanceFormFiel
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {TEAM_MEMBERS.map((member) => (
+                {directoryData.map((member) => (
                   <SelectItem key={member.name} value={member.name}>
                     {member.name}
                   </SelectItem>

@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { TEAM_MEMBERS } from "@/lib/constants";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { calculateTotalHours } from "@/lib/calculations";
 import { AttendanceFormFields, formSchema, FormFields } from "./attendance/AttendanceFormFields";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface AttendanceFormProps {
   onSubmit: (data: AttendanceEntry) => void;
@@ -14,6 +13,15 @@ interface AttendanceFormProps {
 }
 
 export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) {
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  
+  useEffect(() => {
+    const savedDirectory = localStorage.getItem('directoryData');
+    if (savedDirectory) {
+      setDirectoryData(JSON.parse(savedDirectory));
+    }
+  }, []);
+
   const form = useForm<FormFields>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,12 +42,12 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     }
   }, [editingEntry, form]);
 
-  const selectedAgent = TEAM_MEMBERS.find(
+  const selectedAgent = directoryData.find(
     (member) => member.name === form.watch("agentName")
   );
 
   const handleSubmit = (values: FormFields) => {
-    const member = TEAM_MEMBERS.find((m) => m.name === values.agentName);
+    const member = directoryData.find((m) => m.name === values.agentName);
     if (!member) return;
 
     const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
@@ -50,7 +58,7 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
       timeIn: values.timeIn,
       timeOut: values.timeOut,
       totalHours,
-      hourlyRate: member.hourlyRate,
+      hourlyRate: getHourlyRate(member.name),
       shiftType: values.shiftType as any,
       otRate: 0,
       otPay: 0,
@@ -63,13 +71,25 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     }
   };
 
+  // Helper function to get hourly rate based on agent name
+  const getHourlyRate = (name: string): number => {
+    const rateMap: { [key: string]: number } = {
+      "Cherrie Ferrer": 5.38,
+      "Chrisjie Grefiel": 8.75,
+      "Jobelle Fortuna": 5.00,
+      "Mhel Malit": 4.69,
+      "Gilbert Condino": 5.63,
+    };
+    return rateMap[name] || 0;
+  };
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-4 border rounded-lg p-4 bg-white"
       >
-        <AttendanceFormFields form={form} selectedAgent={selectedAgent} />
+        <AttendanceFormFields form={form} selectedAgent={selectedAgent} directoryData={directoryData} />
         <Button type="submit" className="w-full">
           {editingEntry ? "Update Entry" : "Add Entry"}
         </Button>
