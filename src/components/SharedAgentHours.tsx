@@ -24,11 +24,6 @@ export function SharedAgentHours() {
     if (!agentId) return;
 
     // Check if invoice was previously accepted
-    const savedAcceptance = localStorage.getItem(`invoice-acceptance-${agentId}`);
-    if (savedAcceptance) {
-      setAccepted(true);
-    }
-
     const savedEntries = localStorage.getItem('attendanceEntries');
     if (savedEntries) {
       const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
@@ -62,13 +57,25 @@ export function SharedAgentHours() {
     const decodedInfo = atob(agentId).split('|');
     setAgentName(decodedInfo[0]);
     setPosition(decodedInfo[1]);
-  }, [agentId]);
+
+    // Check acceptance status with date range
+    if (payPeriod) {
+      const encodedAcceptanceKey = btoa(`${decodedInfo[0]}|${decodedInfo[1]}|${format(payPeriod.start, 'yyyy-MM-dd')}|${format(payPeriod.end, 'yyyy-MM-dd')}`);
+      const savedAcceptance = localStorage.getItem(`invoice-acceptance-${encodedAcceptanceKey}`);
+      if (savedAcceptance) {
+        setAccepted(true);
+      }
+    }
+  }, [agentId, payPeriod]);
 
   const handleAccept = () => {
+    if (!payPeriod) return;
+    
     setAccepted(true);
-    // Save acceptance status
+    // Save acceptance status with date range
     if (agentId) {
-      localStorage.setItem(`invoice-acceptance-${agentId}`, 'true');
+      const encodedAcceptanceKey = btoa(`${agentName}|${position}|${format(payPeriod.start, 'yyyy-MM-dd')}|${format(payPeriod.end, 'yyyy-MM-dd')}`);
+      localStorage.setItem(`invoice-acceptance-${encodedAcceptanceKey}`, 'true');
     }
     toast({
       title: "Invoice Accepted",

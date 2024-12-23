@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttendanceEntry } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 interface AgentListProps {
   startDate?: Date;
@@ -47,8 +48,10 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
   }))];
 
   const getInvoiceStatus = (agentName: string) => {
+    if (!startDate || !endDate) return "pending";
+    
     const firstName = agentName.split(' ')[0].toLowerCase();
-    const encodedInfo = btoa(`${agentName}|${agentDirectory.find(dir => dir.name === agentName)?.position || ''}`);
+    const encodedInfo = btoa(`${agentName}|${agentDirectory.find(dir => dir.name === agentName)?.position || ''}|${format(startDate, 'yyyy-MM-dd')}|${format(endDate, 'yyyy-MM-dd')}`);
     const isAccepted = localStorage.getItem(`invoice-acceptance-${encodedInfo}`);
     return isAccepted ? "accepted" : "pending";
   };
@@ -91,9 +94,11 @@ export function AgentList({ startDate, endDate, onSelectAgent, selectedAgent }: 
                       </div>
                     )}
                   </div>
-                  <Badge variant={status === "accepted" ? "success" : "secondary"}>
-                    {status === "accepted" ? "Accepted" : "Pending"}
-                  </Badge>
+                  {startDate && endDate ? (
+                    <Badge variant={status === "accepted" ? "success" : "secondary"}>
+                      {status === "accepted" ? "Accepted" : "Pending"}
+                    </Badge>
+                  ) : null}
                 </div>
               </button>
             );
