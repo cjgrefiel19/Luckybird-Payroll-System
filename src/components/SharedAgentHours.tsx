@@ -120,7 +120,7 @@ export function SharedAgentHours() {
             {/* Header with Logo and Company Details */}
             <div className="flex items-center justify-between border-b pb-6">
               <img 
-                src="/lovable-uploads/b677038c-b42f-4e07-98ac-149e8aa47838.png" 
+                src="/lovable-uploads/997d747f-2d61-41ec-9dd2-289eca9c3976.png" 
                 alt="LuckyBird's Logo" 
                 className="h-16 object-contain"
               />
@@ -129,7 +129,6 @@ export function SharedAgentHours() {
                 <p className="text-muted-foreground">123 Business Street, Suite 100</p>
                 <p className="text-muted-foreground">Los Angeles, CA 90012</p>
                 <p className="text-muted-foreground">Tel: (555) 123-4567</p>
-                <p className="text-muted-foreground">Email: payroll@luckybird.com</p>
               </div>
             </div>
 
