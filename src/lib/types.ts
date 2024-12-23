@@ -6,6 +6,7 @@ export interface TeamMember {
   restDays: string;
   monthlyRate: number;
   hourlyRate: number;
+  position?: string;
 }
 
 export interface AttendanceEntry {
