@@ -66,7 +66,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
           )}
         </div>
 
-        <AgentSummaryCards entries={entries} />
+        <AgentSummaryCards filteredEntries={entries} />
         
         <div className="overflow-x-auto">
           <AgentAttendanceTable entries={entries} />

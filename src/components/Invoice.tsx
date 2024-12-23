@@ -88,7 +88,7 @@ export function Invoice() {
 
   return (
     <div className="p-4 space-y-4 relative">
-      {isPaid && <InvoiceWatermark />}
+      {isPaid && <InvoiceWatermark show={true} />}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Payroll Invoice</h1>

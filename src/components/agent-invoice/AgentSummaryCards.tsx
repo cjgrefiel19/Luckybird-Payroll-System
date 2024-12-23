@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/calculations";
 import { AttendanceEntry } from "@/lib/types";
 
-interface AgentSummaryCardsProps {
+export interface AgentSummaryCardsProps {
   filteredEntries: AttendanceEntry[];
 }
 
