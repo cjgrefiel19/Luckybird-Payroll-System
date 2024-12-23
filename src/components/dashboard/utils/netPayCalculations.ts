@@ -37,8 +37,9 @@ export const filterEntriesByDateRange = (
   entries: AttendanceEntry[],
   startDate?: Date,
   endDate?: Date
-) => {
-  if (!startDate || !endDate) return entries;
+): AttendanceEntry[] => {
+  if (!startDate || !endDate) return [];
+  
   return entries.filter((entry) => {
     const entryDate = new Date(entry.date);
     return entryDate >= startDate && entryDate <= endDate;

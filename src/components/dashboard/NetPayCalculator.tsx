@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NetPayData, DirectoryEntry } from "@/lib/types";
+import { NetPayData, DirectoryEntry, AttendanceEntry } from "@/lib/types";
 import { calculateTotalEarnings, filterEntriesByDateRange } from "./utils/netPayCalculations";
 import { NetPayCalculatorProps } from "./types/netPay";
 import { NetPayTableRow } from "./NetPayTableRow";

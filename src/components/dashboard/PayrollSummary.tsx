@@ -6,8 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TEAM_MEMBERS, SHIFT_TYPES } from "@/lib/constants";
-import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
+import { TEAM_MEMBERS } from "@/lib/constants";
+import { AttendanceEntry } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -19,7 +19,6 @@ interface PayrollSummaryProps {
 
 export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
-  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
 
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
@@ -30,16 +29,10 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
       }));
       setEntries(parsedEntries);
     }
-
-    // Load directory data
-    const savedDirectory = localStorage.getItem('directoryData');
-    if (savedDirectory) {
-      setDirectoryData(JSON.parse(savedDirectory));
-    }
   }, []);
 
   const filteredEntries = entries.filter((entry) => {
-    if (!startDate || !endDate) return true;
+    if (!startDate || !endDate) return false;
     const entryDate = new Date(entry.date);
     return entryDate >= startDate && entryDate <= endDate;
   });
@@ -47,7 +40,7 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
   // Get unique agent names from filtered entries
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
-  const summaryData = directoryData
+  const summaryData = TEAM_MEMBERS
     .filter(member => activeAgents.includes(member.name))
     .map((member) => {
       const memberEntries = filteredEntries.filter(
@@ -59,21 +52,13 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         .reduce((sum, entry) => sum + entry.totalHours, 0);
 
       // Group OT hours by type
-      const otHoursByType = memberEntries
+      const otHours = memberEntries
         .filter((entry) =>
           ["Regular OT", "Rest Day OT", "Special Holidays", "Regular Holidays"].includes(
             entry.shiftType
           )
         )
-        .reduce((acc, entry) => {
-          acc[entry.shiftType] = (acc[entry.shiftType] || 0) + entry.totalHours;
-          return acc;
-        }, {} as { [key: string]: number });
-
-      const totalOtHours = Object.values(otHoursByType).reduce(
-        (sum, hours) => sum + hours,
-        0
-      );
+        .reduce((sum, entry) => sum + entry.totalHours, 0);
 
       const paidLeaves = memberEntries.filter((entry) =>
         ["Paid SL", "Paid Leave"].includes(entry.shiftType)
@@ -87,14 +72,11 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         ["Regular Shift", "Paid SL", "Paid Leave"].includes(entry.shiftType)
       ).length;
 
-      // Find hourly rate from entries
-      const hourlyRate = memberEntries[0]?.hourlyRate || 0;
-
       return {
         name: member.name,
         regularHours,
-        otHours: totalOtHours,
-        hourlyRate,
+        otHours,
+        hourlyRate: member.hourlyRate,
         paidLeaves,
         unpaidDays,
         totalDays,
