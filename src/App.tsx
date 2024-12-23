@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { Invoice } from "./components/Invoice";
 import { SharedAgentHours } from "./components/SharedAgentHours";
+import { Directory } from "./components/Directory";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/invoice/:recordId" element={<Invoice />} />
           <Route path="/shared/agent/:agentId" element={<SharedAgentHours />} />
+          <Route path="/directory" element={<Directory />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
