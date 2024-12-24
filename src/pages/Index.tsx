@@ -27,7 +27,7 @@ const Index = () => {
       </div>
       
       <Tabs defaultValue="dashboard" className="space-y-4">
-        <TabsList className="flex flex-wrap gap-2">
+        <TabsList className="flex flex-wrap gap-2 bg-[#E5DEFF] hover:bg-[#D3E4FD] transition-colors duration-300">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="schedule">Team Schedule</TabsTrigger>
           <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
