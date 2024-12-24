@@ -27,13 +27,15 @@ const Index = () => {
       </div>
       
       <Tabs defaultValue="dashboard" className="space-y-4">
-        <TabsList className="flex flex-wrap gap-2 bg-[#E5DEFF] hover:bg-[#D3E4FD] transition-colors duration-300 p-4">
-          <TabsTrigger value="dashboard" className="text-lg font-bold px-6 py-3">Dashboard</TabsTrigger>
-          <TabsTrigger value="schedule" className="text-lg font-bold px-6 py-3">Team Schedule</TabsTrigger>
-          <TabsTrigger value="attendance" className="text-lg font-bold px-6 py-3">Daily Attendance</TabsTrigger>
-          <TabsTrigger value="records" className="text-lg font-bold px-6 py-3">Payroll Records</TabsTrigger>
-          <TabsTrigger value="agent-invoice" className="text-lg font-bold px-6 py-3">Agent Invoice</TabsTrigger>
-        </TabsList>
+        <div className="w-full bg-[#E5DEFF] hover:bg-[#D3E4FD] transition-colors duration-300">
+          <TabsList className="flex flex-wrap gap-2 w-full justify-start p-4">
+            <TabsTrigger value="dashboard" className="text-lg font-bold px-6 py-3">Dashboard</TabsTrigger>
+            <TabsTrigger value="schedule" className="text-lg font-bold px-6 py-3">Team Schedule</TabsTrigger>
+            <TabsTrigger value="attendance" className="text-lg font-bold px-6 py-3">Daily Attendance</TabsTrigger>
+            <TabsTrigger value="records" className="text-lg font-bold px-6 py-3">Payroll Records</TabsTrigger>
+            <TabsTrigger value="agent-invoice" className="text-lg font-bold px-6 py-3">Agent Invoice</TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent value="schedule">
           <TeamSchedule />
         </TabsContent>
