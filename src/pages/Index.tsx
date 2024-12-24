@@ -28,7 +28,7 @@ const Index = () => {
       </div>
       
       <Tabs defaultValue="dashboard" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex flex-wrap gap-2">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="schedule">Team Schedule</TabsTrigger>
           <TabsTrigger value="attendance">Daily Attendance</TabsTrigger>
