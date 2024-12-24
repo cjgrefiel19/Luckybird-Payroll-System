@@ -52,7 +52,7 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
@@ -62,8 +62,29 @@ This project is built with .
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/c271e109-ee83-4ba3-bf2a-f491004daadb) and click on Share -> Publish.
+There are two main ways to deploy your project:
+
+1. **Using Lovable (Recommended)**
+   - Open [Lovable](https://lovable.dev/projects/c271e109-ee83-4ba3-bf2a-f491004daadb)
+   - Click on Share -> Publish
+   - Your app will be instantly deployed and you'll get a public URL
+
+2. **Using your own hosting (Advanced)**
+   - Deploy to Netlify:
+     1. Sign up for a [Netlify](https://www.netlify.com/) account
+     2. Connect your GitHub repository
+     3. Configure the build settings:
+        - Build command: `npm run build`
+        - Publish directory: `dist`
+   - Deploy to Vercel:
+     1. Sign up for a [Vercel](https://vercel.com/) account
+     2. Import your GitHub repository
+     3. Vercel will automatically detect the correct build settings
+   - Deploy to GitHub Pages:
+     1. Go to your repository settings
+     2. Navigate to Pages
+     3. Configure GitHub Actions for deployment
 
 ## I want to use a custom domain - is that possible?
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+We don't support custom domains (yet) in Lovable's built-in deployment. If you want to deploy your project under your own domain then we recommend using Netlify or Vercel. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
