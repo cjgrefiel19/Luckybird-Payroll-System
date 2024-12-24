@@ -17,9 +17,13 @@ export function Dashboard() {
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load pay periods from localStorage
+  // Load pay periods and selected dates from localStorage
   useEffect(() => {
     const savedPayPeriods = localStorage.getItem('payPeriods');
+    const savedSelectedPeriod = localStorage.getItem('selectedPayPeriod');
+    const savedStartDate = localStorage.getItem('startDate');
+    const savedEndDate = localStorage.getItem('endDate');
+
     if (savedPayPeriods) {
       const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
         ...period,
@@ -28,12 +32,49 @@ export function Dashboard() {
       }));
       setPayPeriods(parsed);
     }
+
+    if (savedSelectedPeriod) {
+      setSelectedPayPeriod(savedSelectedPeriod);
+    }
+
+    if (savedStartDate) {
+      setStartDate(new Date(savedStartDate));
+    }
+
+    if (savedEndDate) {
+      setEndDate(new Date(savedEndDate));
+    }
   }, []);
 
   // Save pay periods to localStorage
   useEffect(() => {
     localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
   }, [payPeriods]);
+
+  // Save selected pay period and dates to localStorage
+  useEffect(() => {
+    if (selectedPayPeriod) {
+      localStorage.setItem('selectedPayPeriod', selectedPayPeriod);
+    } else {
+      localStorage.removeItem('selectedPayPeriod');
+    }
+  }, [selectedPayPeriod]);
+
+  useEffect(() => {
+    if (startDate) {
+      localStorage.setItem('startDate', startDate.toISOString());
+    } else {
+      localStorage.removeItem('startDate');
+    }
+  }, [startDate]);
+
+  useEffect(() => {
+    if (endDate) {
+      localStorage.setItem('endDate', endDate.toISOString());
+    } else {
+      localStorage.removeItem('endDate');
+    }
+  }, [endDate]);
 
   const handleSavePayPeriod = (name: string) => {
     if (!startDate || !endDate) {
@@ -64,6 +105,9 @@ export function Dashboard() {
       setSelectedPayPeriod(null);
       setStartDate(undefined);
       setEndDate(undefined);
+      localStorage.removeItem('selectedPayPeriod');
+      localStorage.removeItem('startDate');
+      localStorage.removeItem('endDate');
     }
     toast({
       title: "Success",
@@ -172,4 +216,4 @@ export function Dashboard() {
       <NetPaySummary startDate={startDate} endDate={endDate} />
     </div>
   );
-}
+};
