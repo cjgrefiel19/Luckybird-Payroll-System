@@ -41,21 +41,18 @@ const defaultDirectoryData: DirectoryEntry[] = [
 
 export function Directory() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>(defaultDirectoryData);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof DirectoryEntry;
     direction: "asc" | "desc";
   } | null>(null);
   const { toast } = useToast();
 
-  // Load directory data from localStorage on component mount
   useEffect(() => {
     const savedDirectory = localStorage.getItem('directoryData');
     if (savedDirectory) {
       setDirectoryData(JSON.parse(savedDirectory));
     } else {
-      // If no data exists in localStorage, use the default data
-      setDirectoryData(defaultDirectoryData);
       localStorage.setItem('directoryData', JSON.stringify(defaultDirectoryData));
       toast({
         title: "Directory Initialized",
@@ -63,11 +60,6 @@ export function Directory() {
       });
     }
   }, [toast]);
-
-  // Save directory data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('directoryData', JSON.stringify(directoryData));
-  }, [directoryData]);
 
   const handleSort = (key: keyof DirectoryEntry) => {
     setSortConfig((current) => ({
