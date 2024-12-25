@@ -7,11 +7,22 @@ interface InvoiceTableProps {
 }
 
 export function InvoiceTable({ entries }: InvoiceTableProps) {
+  // Array of pastel colors for alternating rows
+  const rowColors = [
+    'bg-[#F2FCE2]', // Soft Green
+    'bg-[#FEF7CD]', // Soft Yellow
+    'bg-[#FEC6A1]', // Soft Orange
+    'bg-[#E5DEFF]', // Soft Purple
+    'bg-[#FFDEE2]', // Soft Pink
+    'bg-[#FDE1D3]', // Soft Peach
+    'bg-[#D3E4FD]', // Soft Blue
+  ];
+
   return (
     <div className="mt-8">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-[#f2f2f2]">
+          <tr className="bg-gray-100">
             <th className="p-3 text-left border-b">Date</th>
             <th className="p-3 text-left border-b">Time In</th>
             <th className="p-3 text-left border-b">Time Out</th>
@@ -25,7 +36,7 @@ export function InvoiceTable({ entries }: InvoiceTableProps) {
           {entries?.map((entry, index) => (
             <tr 
               key={index}
-              className="bg-[rgba(211,211,211,0.1)] border-b hover:bg-gray-50"
+              className={`${rowColors[index % rowColors.length]} hover:bg-gray-50/50 transition-colors`}
             >
               <td className="p-3">{format(new Date(entry.date), "PP")}</td>
               <td className="p-3">{entry.timeIn}</td>

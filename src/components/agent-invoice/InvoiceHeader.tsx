@@ -11,9 +11,8 @@ interface InvoiceHeaderProps {
 export function InvoiceHeader({ agentName, startDate, endDate, position, logo }: InvoiceHeaderProps) {
   return (
     <div 
-      className="absolute top-0 w-screen" 
+      className="absolute top-0 w-screen bg-[#B3E5FC]/40" 
       style={{ 
-        backgroundColor: 'rgba(135, 206, 235, 0.4)',
         left: '50%',
         right: '50%',
         transform: 'translateX(-50%)',
@@ -24,7 +23,7 @@ export function InvoiceHeader({ agentName, startDate, endDate, position, logo }:
     >
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6 text-primary">
-          Agent Invoice View - {agentName}
+          Payroll Invoice - {agentName}
         </h1>
         
         <div className="flex justify-between items-start mb-8">
@@ -45,9 +44,8 @@ export function InvoiceHeader({ agentName, startDate, endDate, position, logo }:
           </div>
           
           <div className="text-right">
-            <h2 className="text-2xl font-semibold mb-2">Payroll Invoice</h2>
+            <h2 className="text-2xl font-semibold mb-2">Pay Period:</h2>
             <p className="text-muted-foreground">
-              Pay Period:<br />
               {format(startDate, "PP")} - {format(endDate, "PP")}
             </p>
             {position && (
