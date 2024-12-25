@@ -8,7 +8,7 @@ import { AgentInvoice } from "@/components/AgentInvoice";
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="sticky top-0 bg-background z-50 border-b">
+      <div className="fixed top-0 left-0 right-0 bg-background z-50 border-b shadow-sm">
         <div className="container mx-auto py-6">
           <div className="flex items-start mb-8 gap-4">
             <div className="flex items-center gap-4">
@@ -61,26 +61,29 @@ const Index = () => {
                 Agent Invoice
               </TabsTrigger>
             </TabsList>
-
-            <div className="container mx-auto py-6 flex-1">
-              <TabsContent value="schedule">
-                <TeamSchedule />
-              </TabsContent>
-              <TabsContent value="attendance">
-                <DailyAttendance />
-              </TabsContent>
-              <TabsContent value="dashboard">
-                <Dashboard />
-              </TabsContent>
-              <TabsContent value="records">
-                <PayrollRecords />
-              </TabsContent>
-              <TabsContent value="agent-invoice">
-                <AgentInvoice />
-              </TabsContent>
-            </div>
           </Tabs>
         </div>
+      </div>
+
+      {/* Add padding to account for fixed header */}
+      <div className="mt-[280px] container mx-auto py-6 flex-1">
+        <Tabs defaultValue="dashboard">
+          <TabsContent value="schedule">
+            <TeamSchedule />
+          </TabsContent>
+          <TabsContent value="attendance">
+            <DailyAttendance />
+          </TabsContent>
+          <TabsContent value="dashboard">
+            <Dashboard />
+          </TabsContent>
+          <TabsContent value="records">
+            <PayrollRecords />
+          </TabsContent>
+          <TabsContent value="agent-invoice">
+            <AgentInvoice />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
