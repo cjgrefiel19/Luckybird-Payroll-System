@@ -5,10 +5,11 @@ import { format } from "date-fns";
 import html2pdf from 'html2pdf.js';
 
 export async function exportToPDF(record: PayrollRecord) {
-  const container = document.createElement('div');
-  container.className = 'p-8 bg-white min-h-screen';
+  // First page container
+  const firstPage = document.createElement('div');
+  firstPage.className = 'p-8 bg-white min-h-screen';
   
-  // Add header section with improved styling
+  // Header section
   const header = document.createElement('div');
   header.className = 'flex justify-between items-start mb-12';
   header.innerHTML = `
@@ -36,43 +37,52 @@ export async function exportToPDF(record: PayrollRecord) {
       </p>
     </div>
   `;
-  container.appendChild(header);
+  firstPage.appendChild(header);
 
-  // Add PayrollSummary with improved styling
+  // Payroll Summary section with title
+  const summaryTitle = document.createElement('h3');
+  summaryTitle.className = 'text-xl font-semibold mb-4 text-gray-800';
+  summaryTitle.textContent = 'Payroll Summary';
+  firstPage.appendChild(summaryTitle);
+
+  // Add PayrollSummary component
   const summaryContainer = document.createElement('div');
-  summaryContainer.className = 'mb-12';
-  const payrollSummary = document.createElement('div');
-  payrollSummary.innerHTML = `
-    <div class="bg-[#33C3F0]/20 rounded-lg p-8">
-      ${await renderComponent(
-        <PayrollSummary 
-          startDate={record.payPeriod.startDate} 
-          endDate={record.payPeriod.endDate}
-        />
-      )}
-    </div>
-  `;
-  summaryContainer.appendChild(payrollSummary);
-  container.appendChild(summaryContainer);
+  summaryContainer.className = 'mb-12 bg-[#33C3F0]/5 rounded-lg p-8';
+  summaryContainer.innerHTML = await renderComponent(
+    <PayrollSummary 
+      startDate={record.payPeriod.startDate} 
+      endDate={record.payPeriod.endDate}
+    />
+  );
+  firstPage.appendChild(summaryContainer);
 
-  // Add NetPaySummary with improved styling
+  // Second page container
+  const secondPage = document.createElement('div');
+  secondPage.className = 'p-8 bg-white min-h-screen';
+
+  // Net Pay Summary title for second page
+  const netPayTitle = document.createElement('h3');
+  netPayTitle.className = 'text-xl font-semibold mb-4 text-gray-800';
+  netPayTitle.textContent = 'Overall Net Pay Summary';
+  secondPage.appendChild(netPayTitle);
+
+  // Add NetPaySummary component to second page
   const netPayContainer = document.createElement('div');
-  netPayContainer.className = 'mb-8';
-  const netPaySummary = document.createElement('div');
-  netPaySummary.innerHTML = `
-    <div class="bg-[#33C3F0]/20 rounded-lg p-8">
-      ${await renderComponent(
-        <NetPaySummary 
-          startDate={record.payPeriod.startDate} 
-          endDate={record.payPeriod.endDate}
-        />
-      )}
-    </div>
-  `;
-  netPayContainer.appendChild(netPaySummary);
-  container.appendChild(netPayContainer);
+  netPayContainer.className = 'bg-[#33C3F0]/5 rounded-lg p-8';
+  netPayContainer.innerHTML = await renderComponent(
+    <NetPaySummary 
+      startDate={record.payPeriod.startDate} 
+      endDate={record.payPeriod.endDate}
+    />
+  );
+  secondPage.appendChild(netPayContainer);
 
-  // Configure PDF options
+  // Create a wrapper for both pages
+  const container = document.createElement('div');
+  container.appendChild(firstPage);
+  container.appendChild(secondPage);
+
+  // Configure PDF options for legal size and landscape orientation
   const opt = {
     margin: [0.5, 0.5],
     filename: `payroll-invoice-${format(record.payPeriod.startDate, "yyyy-MM-dd")}.pdf`,
@@ -86,7 +96,7 @@ export async function exportToPDF(record: PayrollRecord) {
     },
     jsPDF: { 
       unit: 'in', 
-      format: 'letter', 
+      format: 'legal', 
       orientation: 'landscape'
     }
   };
