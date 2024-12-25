@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { isWithinInterval } from "date-fns";
+import { TEAM_MEMBERS } from "@/lib/constants";
 
 export function DailyAttendance() {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
@@ -23,14 +24,24 @@ export function DailyAttendance() {
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
   const { toast } = useToast();
 
-  // Load directory data
+  // Load directory data and team members
   useEffect(() => {
     const savedDirectory = localStorage.getItem('directoryData');
     if (savedDirectory) {
       const parsedDirectory = JSON.parse(savedDirectory);
       setDirectoryData(parsedDirectory);
-      console.log('Loaded directory data:', parsedDirectory);
     }
+
+    // Add team members to directory if they don't exist
+    const teamMemberNames = TEAM_MEMBERS.map(member => ({
+      name: member.name,
+      position: member.position || 'Agent'
+    }));
+    setDirectoryData(prevData => {
+      const existingNames = new Set(prevData.map(d => d.name));
+      const newMembers = teamMemberNames.filter(member => !existingNames.has(member.name));
+      return [...prevData, ...newMembers];
+    });
   }, []);
 
   // Load entries from localStorage on component mount
@@ -101,6 +112,9 @@ export function DailyAttendance() {
     return matchesDateRange && matchesAgent;
   });
 
+  // Get unique agent names from entries
+  const uniqueAgents = Array.from(new Set(entries.map(entry => entry.agentName)));
+
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-2xl font-bold mb-4">Daily Attendance</h2>
@@ -128,9 +142,9 @@ export function DailyAttendance() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
-                {directoryData.map((member) => (
-                  <SelectItem key={member.name} value={member.name}>
-                    {member.name}
+                {[...new Set([...directoryData.map(member => member.name), ...uniqueAgents])].map((agentName) => (
+                  <SelectItem key={agentName} value={agentName}>
+                    {agentName}
                   </SelectItem>
                 ))}
               </SelectContent>
