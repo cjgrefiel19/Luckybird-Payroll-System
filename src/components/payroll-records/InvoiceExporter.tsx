@@ -8,12 +8,13 @@ export async function exportToPDF(record: PayrollRecord) {
   // First page container
   const firstPage = document.createElement('div');
   firstPage.className = 'p-8 bg-white min-h-screen';
+  firstPage.style.pageBreakAfter = 'always';
   
   // Header section
   const header = document.createElement('div');
   header.className = 'flex justify-between items-start mb-12';
   header.innerHTML = `
-    <div class="flex items-start gap-6">
+    <div class="flex items-center gap-6">
       <img 
         src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
         alt="LuckyBird Logo"
@@ -23,9 +24,9 @@ export async function exportToPDF(record: PayrollRecord) {
       <div>
         <h1 class="text-3xl font-bold text-[#33C3F0]">LuckyBird</h1>
         <div class="text-gray-600 mt-2">
-          <p>732 N. Madelia St.</p>
-          <p>Spokane, WA 99202</p>
-          <p>+1 (509) 508-2229</p>
+          732 N. Madelia St.<br/>
+          Spokane, WA 99202<br/>
+          +1 (509) 508-2229
         </div>
       </div>
     </div>
@@ -59,6 +60,7 @@ export async function exportToPDF(record: PayrollRecord) {
   // Second page container
   const secondPage = document.createElement('div');
   secondPage.className = 'p-8 bg-white min-h-screen';
+  secondPage.style.pageBreakBefore = 'always';
 
   // Net Pay Summary title for second page
   const netPayTitle = document.createElement('h3');
@@ -69,6 +71,7 @@ export async function exportToPDF(record: PayrollRecord) {
   // Add NetPaySummary component to second page
   const netPayContainer = document.createElement('div');
   netPayContainer.className = 'bg-[#33C3F0]/5 rounded-lg p-8';
+  netPayContainer.style.breakInside = 'avoid';
   netPayContainer.innerHTML = await renderComponent(
     <NetPaySummary 
       startDate={record.payPeriod.startDate} 
@@ -98,7 +101,8 @@ export async function exportToPDF(record: PayrollRecord) {
       unit: 'in', 
       format: 'legal', 
       orientation: 'landscape'
-    }
+    },
+    pagebreak: { mode: 'avoid-all' }
   };
 
   // Generate PDF
