@@ -30,31 +30,31 @@ const Index = () => {
         <TabsList className="flex flex-wrap gap-2 w-full justify-start p-0">
           <TabsTrigger 
             value="dashboard" 
-            className="text-lg font-bold px-6 py-3 bg-[#E5DEFF] hover:bg-[#D3E4FD] transition-colors duration-300 data-[state=active]:bg-[#E5DEFF] flex-1"
+            className="text-xl font-bold px-6 py-3 bg-[#E5DEFF]/50 hover:bg-[#D3E4FD]/50 transition-colors duration-300 data-[state=active]:bg-[#E5DEFF]/50 flex-1"
           >
             Dashboard
           </TabsTrigger>
           <TabsTrigger 
             value="schedule" 
-            className="text-lg font-bold px-6 py-3 bg-[#FDE1D3] hover:bg-[#FEC6A1] transition-colors duration-300 data-[state=active]:bg-[#FDE1D3] flex-1"
+            className="text-xl font-bold px-6 py-3 bg-[#FDE1D3]/50 hover:bg-[#FEC6A1]/50 transition-colors duration-300 data-[state=active]:bg-[#FDE1D3]/50 flex-1"
           >
             Team Schedule
           </TabsTrigger>
           <TabsTrigger 
             value="attendance" 
-            className="text-lg font-bold px-6 py-3 bg-[#F2FCE2] hover:bg-[#FEF7CD] transition-colors duration-300 data-[state=active]:bg-[#F2FCE2] flex-1"
+            className="text-xl font-bold px-6 py-3 bg-[#F2FCE2]/50 hover:bg-[#FEF7CD]/50 transition-colors duration-300 data-[state=active]:bg-[#F2FCE2]/50 flex-1"
           >
             Daily Attendance
           </TabsTrigger>
           <TabsTrigger 
             value="records" 
-            className="text-lg font-bold px-6 py-3 bg-[#FFDEE2] hover:bg-[#FDE1D3] transition-colors duration-300 data-[state=active]:bg-[#FFDEE2] flex-1"
+            className="text-xl font-bold px-6 py-3 bg-[#FFDEE2]/50 hover:bg-[#FDE1D3]/50 transition-colors duration-300 data-[state=active]:bg-[#FFDEE2]/50 flex-1"
           >
             Payroll Records
           </TabsTrigger>
           <TabsTrigger 
             value="agent-invoice" 
-            className="text-lg font-bold px-6 py-3 bg-[#D3E4FD] hover:bg-[#F1F0FB] transition-colors duration-300 data-[state=active]:bg-[#D3E4FD] flex-1"
+            className="text-xl font-bold px-6 py-3 bg-[#D3E4FD]/50 hover:bg-[#F1F0FB]/50 transition-colors duration-300 data-[state=active]:bg-[#D3E4FD]/50 flex-1"
           >
             Agent Invoice
           </TabsTrigger>
