@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { PayPeriod } from "@/lib/types";
 import { Trash2 } from "lucide-react";
+import { format } from "date-fns";
 
 interface PayPeriodSelectProps {
   payPeriods: PayPeriod[];
@@ -27,17 +28,17 @@ export function PayPeriodSelect({
       value={selectedPayPeriod || ""}
       onValueChange={onPayPeriodSelect}
     >
-      <SelectTrigger>
+      <SelectTrigger className="w-full bg-background">
         <SelectValue placeholder="Select pay period" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-background z-50">
         {payPeriods.map((period) => (
           <div key={period.id} className="flex items-center justify-between p-2">
             <SelectItem 
               value={period.id}
               className="flex-1"
             >
-              {period.name}
+              {period.name} ({format(new Date(period.startDate), "MMM d")} - {format(new Date(period.endDate), "MMM d, yyyy")})
             </SelectItem>
             <Button
               type="button"
