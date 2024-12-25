@@ -8,27 +8,27 @@ import { AgentInvoice } from "@/components/AgentInvoice";
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="fixed top-0 left-0 right-0 bg-background z-50 border-b shadow-sm">
-        <div className="container mx-auto py-6">
-          <div className="flex items-start mb-8 gap-4">
-            <div className="flex items-center gap-4">
-              <img 
-                src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png" 
-                alt="LuckyBird Logo" 
-                className="w-24 h-24 object-contain self-center"
-              />
-              <div className="text-left flex flex-col justify-center h-24">
-                <h1 className="text-2xl font-bold text-primary">LuckyBird</h1>
-                <address className="not-italic text-muted-foreground">
-                  732 N. Madelia St.<br />
-                  Spokane, WA 99202<br />
-                  +1 (509) 508-2229
-                </address>
+      <Tabs defaultValue="dashboard" className="flex-1">
+        <div className="fixed top-0 left-0 right-0 bg-background z-50 border-b shadow-sm">
+          <div className="container mx-auto py-6">
+            <div className="flex items-start mb-8 gap-4">
+              <div className="flex items-center gap-4">
+                <img 
+                  src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png" 
+                  alt="LuckyBird Logo" 
+                  className="w-24 h-24 object-contain self-center"
+                />
+                <div className="text-left flex flex-col justify-center h-24">
+                  <h1 className="text-2xl font-bold text-primary">LuckyBird</h1>
+                  <address className="not-italic text-muted-foreground">
+                    732 N. Madelia St.<br />
+                    Spokane, WA 99202<br />
+                    +1 (509) 508-2229
+                  </address>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <Tabs defaultValue="dashboard">
+            
             <TabsList className="flex flex-wrap gap-2 w-full justify-start p-0">
               <TabsTrigger 
                 value="dashboard" 
@@ -61,13 +61,11 @@ const Index = () => {
                 Agent Invoice
               </TabsTrigger>
             </TabsList>
-          </Tabs>
+          </div>
         </div>
-      </div>
 
-      {/* Add padding to account for fixed header */}
-      <div className="mt-[280px] container mx-auto py-6 flex-1">
-        <Tabs defaultValue="dashboard">
+        {/* Add padding to account for fixed header */}
+        <div className="mt-[280px] container mx-auto py-6">
           <TabsContent value="schedule">
             <TeamSchedule />
           </TabsContent>
@@ -83,8 +81,8 @@ const Index = () => {
           <TabsContent value="agent-invoice">
             <AgentInvoice />
           </TabsContent>
-        </Tabs>
-      </div>
+        </div>
+      </Tabs>
     </div>
   );
 };
