@@ -11,7 +11,7 @@ import { TEAM_MEMBERS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/calculations";
 import { TeamScheduleForm } from "./TeamScheduleForm";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TeamMember } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -19,19 +19,34 @@ export function TeamSchedule() {
   const [members, setMembers] = useState<TeamMember[]>(TEAM_MEMBERS);
   const { toast } = useToast();
 
+  // Load team members from localStorage on mount
+  useEffect(() => {
+    const savedMembers = localStorage.getItem('teamMembers');
+    if (savedMembers) {
+      setMembers(JSON.parse(savedMembers));
+    } else {
+      // Initialize localStorage with default team members
+      localStorage.setItem('teamMembers', JSON.stringify(TEAM_MEMBERS));
+    }
+  }, []);
+
   const handleAdd = (newMember: TeamMember) => {
-    setMembers([...members, newMember]);
+    const updatedMembers = [...members, newMember];
+    setMembers(updatedMembers);
+    localStorage.setItem('teamMembers', JSON.stringify(updatedMembers));
   };
 
   const handleEdit = (editedMember: TeamMember, index: number) => {
     const newMembers = [...members];
     newMembers[index] = editedMember;
     setMembers(newMembers);
+    localStorage.setItem('teamMembers', JSON.stringify(newMembers));
   };
 
   const handleDelete = (index: number) => {
     const newMembers = members.filter((_, i) => i !== index);
     setMembers(newMembers);
+    localStorage.setItem('teamMembers', JSON.stringify(newMembers));
     toast({
       title: "Deleted successfully",
       description: "Team member has been removed.",
