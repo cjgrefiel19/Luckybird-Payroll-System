@@ -3,6 +3,7 @@ import { PayrollSummary } from "../dashboard/PayrollSummary";
 import { NetPaySummary } from "../dashboard/NetPaySummary";
 import html2pdf from "html2pdf.js";
 import { format } from "date-fns";
+import * as ReactDOMServer from 'react-dom/server';
 
 export async function renderInvoiceContent(record: PayrollRecord): Promise<HTMLElement> {
   const tempDiv = document.createElement('div');
@@ -45,20 +46,25 @@ export async function renderInvoiceContent(record: PayrollRecord): Promise<HTMLE
   const summaryDiv = document.createElement('div');
   summaryDiv.className = 'space-y-8';
 
-  // Add PayrollSummary and NetPaySummary components
+  // Render PayrollSummary component
   const payrollSummaryDiv = document.createElement('div');
-  const payrollSummary = new PayrollSummary({ 
-    startDate: record.payPeriod.startDate, 
-    endDate: record.payPeriod.endDate 
-  });
-  payrollSummaryDiv.appendChild(payrollSummary as unknown as Node);
+  const payrollSummaryHtml = ReactDOMServer.renderToString(
+    <PayrollSummary 
+      startDate={record.payPeriod.startDate} 
+      endDate={record.payPeriod.endDate} 
+    />
+  );
+  payrollSummaryDiv.innerHTML = payrollSummaryHtml;
 
+  // Render NetPaySummary component
   const netPaySummaryDiv = document.createElement('div');
-  const netPaySummary = new NetPaySummary({ 
-    startDate: record.payPeriod.startDate, 
-    endDate: record.payPeriod.endDate 
-  });
-  netPaySummaryDiv.appendChild(netPaySummary as unknown as Node);
+  const netPaySummaryHtml = ReactDOMServer.renderToString(
+    <NetPaySummary 
+      startDate={record.payPeriod.startDate} 
+      endDate={record.payPeriod.endDate} 
+    />
+  );
+  netPaySummaryDiv.innerHTML = netPaySummaryHtml;
 
   summaryDiv.appendChild(payrollSummaryDiv);
   summaryDiv.appendChild(netPaySummaryDiv);
