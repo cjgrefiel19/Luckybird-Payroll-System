@@ -4,7 +4,7 @@ interface InvoiceHeaderProps {
 
 export function InvoiceHeader({ logo }: InvoiceHeaderProps) {
   return (
-    <div className="flex items-start justify-between border-b pb-6">
+    <div className="flex items-start justify-between border-b pb-6" style={{ backgroundColor: 'rgba(135, 206, 235, 0.4)' }}>
       <div className="flex flex-col items-start">
         <img 
           src={logo}
