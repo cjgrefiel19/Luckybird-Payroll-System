@@ -3,17 +3,10 @@ import { AttendanceForm } from "./AttendanceForm";
 import { AttendanceTable } from "./AttendanceTable";
 import { AttendanceEntry, DirectoryEntry, PayPeriod } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
-import { DateRangePicker } from "./dashboard/DateRangePicker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { isWithinInterval } from "date-fns";
 import { TEAM_MEMBERS } from "@/lib/constants";
+import { AttendanceHeader } from "./attendance/AttendanceHeader";
+import html2pdf from "html2pdf.js";
 
 export function DailyAttendance() {
   const [entries, setEntries] = useState<AttendanceEntry[]>([]);
@@ -155,11 +148,37 @@ export function DailyAttendance() {
     });
   };
 
+  const handleExport = () => {
+    const element = document.getElementById('attendance-content');
+    if (!element) return;
+
+    const opt = {
+      margin: [0.5, 0.5],
+      filename: `attendance-report-${startDate?.toISOString().split('T')[0]}-${endDate?.toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        letterRendering: true,
+      },
+      jsPDF: { 
+        unit: 'in', 
+        format: 'a4', 
+        orientation: 'landscape',
+      }
+    };
+
+    html2pdf().set(opt).from(element).save();
+    
+    toast({
+      title: "Success",
+      description: "Attendance report exported successfully",
+    });
+  };
+
   const filteredEntries = entries.filter((entry) => {
     let matchesDateRange = true;
     let matchesAgent = true;
 
-    // Filter by date range if both dates are selected
     if (startDate && endDate) {
       matchesDateRange = isWithinInterval(new Date(entry.date), {
         start: startDate,
@@ -167,7 +186,6 @@ export function DailyAttendance() {
       });
     }
 
-    // Filter by agent if one is selected
     if (selectedAgent !== "all") {
       matchesAgent = entry.agentName === selectedAgent;
     }
@@ -179,46 +197,31 @@ export function DailyAttendance() {
     <div className="p-4 space-y-4">
       <h2 className="text-2xl font-bold mb-4">Daily Attendance</h2>
       
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-              payPeriods={payPeriods}
-              selectedPayPeriod={selectedPayPeriod}
-              onPayPeriodSelect={setSelectedPayPeriod}
-              onSavePayPeriod={handleSavePayPeriod}
-              onDeletePayPeriod={handleDeletePayPeriod}
-            />
-            <Select
-              value={selectedAgent}
-              onValueChange={setSelectedAgent}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an agent" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Agents</SelectItem>
-                {[...new Set([...directoryData.map(member => member.name), ...entries.map(entry => entry.agentName)])].map((agentName) => (
-                  <SelectItem key={agentName} value={agentName}>
-                    {agentName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      <AttendanceForm onSubmit={handleSubmit} editingEntry={editingEntry} />
-      <AttendanceTable 
-        entries={filteredEntries} 
-        onEdit={handleEdit} 
-        onDelete={handleDelete} 
+      <AttendanceHeader
+        startDate={startDate}
+        endDate={endDate}
+        selectedAgent={selectedAgent}
+        payPeriods={payPeriods}
+        selectedPayPeriod={selectedPayPeriod}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onAgentChange={setSelectedAgent}
+        onPayPeriodSelect={setSelectedPayPeriod}
+        onSavePayPeriod={handleSavePayPeriod}
+        onDeletePayPeriod={handleDeletePayPeriod}
+        onExport={handleExport}
+        directoryData={directoryData}
+        entries={entries}
       />
+
+      <div id="attendance-content">
+        <AttendanceForm onSubmit={handleSubmit} editingEntry={editingEntry} />
+        <AttendanceTable 
+          entries={filteredEntries} 
+          onEdit={handleEdit} 
+          onDelete={handleDelete} 
+        />
+      </div>
     </div>
   );
 }

@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { PayrollRecord } from "@/lib/types";
-import { Trash2, ExternalLink } from "lucide-react";
+import { Trash2, ExternalLink, Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import html2pdf from "html2pdf.js";
 
 export function PayrollRecords() {
   const [records, setRecords] = useState<PayrollRecord[]>([]);
@@ -54,6 +55,33 @@ export function PayrollRecords() {
     );
   };
 
+  const handleExport = (record: PayrollRecord) => {
+    const element = document.getElementById(`invoice-${record.id}`);
+    if (!element) return;
+
+    const opt = {
+      margin: [0.5, 0.5],
+      filename: `payroll-record-${format(record.payPeriod.startDate, "yyyy-MM-dd")}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        letterRendering: true,
+      },
+      jsPDF: { 
+        unit: 'in', 
+        format: 'a4', 
+        orientation: 'landscape',
+      }
+    };
+
+    html2pdf().set(opt).from(element).save();
+    
+    toast({
+      title: "Success",
+      description: "Payroll record exported successfully",
+    });
+  };
+
   return (
     <div className="p-4 space-y-4">
       <Card>
@@ -73,7 +101,7 @@ export function PayrollRecords() {
             </TableHeader>
             <TableBody>
               {records.map((record) => (
-                <TableRow key={record.id}>
+                <TableRow key={record.id} id={`invoice-${record.id}`}>
                   <TableCell className="text-center">
                     {format(record.payPeriod.startDate, "PP")} -{" "}
                     {format(record.payPeriod.endDate, "PP")}
@@ -108,13 +136,22 @@ export function PayrollRecords() {
                     />
                   </TableCell>
                   <TableCell className="text-center">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDelete(record.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleExport(record)}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDelete(record.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
