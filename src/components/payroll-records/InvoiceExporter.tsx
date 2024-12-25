@@ -5,13 +5,12 @@ import html2pdf from "html2pdf.js";
 import { format } from "date-fns";
 
 export async function exportToPDF(record: PayrollRecord) {
-  // Create a temporary container
   const container = document.createElement('div');
-  container.className = 'p-8 bg-white';
+  container.className = 'p-8 bg-white min-h-screen';
   
-  // Add header section
+  // Add header section with improved styling
   const header = document.createElement('div');
-  header.className = 'flex justify-between items-start mb-12';
+  header.className = 'flex justify-between items-start mb-12 border-b pb-6';
   header.innerHTML = `
     <div class="flex items-start gap-6">
       <img 
@@ -21,7 +20,7 @@ export async function exportToPDF(record: PayrollRecord) {
         crossorigin="anonymous"
       />
       <div>
-        <h1 class="text-3xl font-bold">LuckyBird</h1>
+        <h1 class="text-3xl font-bold text-[#33C3F0]">LuckyBird</h1>
         <div class="text-gray-600 mt-2">
           <p>732 N. Madelia St.</p>
           <p>Spokane, WA 99202</p>
@@ -30,7 +29,7 @@ export async function exportToPDF(record: PayrollRecord) {
       </div>
     </div>
     <div class="text-right">
-      <h2 class="text-2xl font-bold mb-2">Payroll Invoice</h2>
+      <h2 class="text-2xl font-semibold mb-2">Payroll Invoice</h2>
       <p class="text-gray-600">
         Pay Period:<br/>
         ${format(record.payPeriod.startDate, "MMM d, yyyy")} - ${format(record.payPeriod.endDate, "MMM d, yyyy")}
@@ -39,13 +38,13 @@ export async function exportToPDF(record: PayrollRecord) {
   `;
   container.appendChild(header);
 
-  // Add PayrollSummary
+  // Add PayrollSummary with improved styling
   const summaryContainer = document.createElement('div');
-  summaryContainer.className = 'mb-8';
+  summaryContainer.className = 'mb-12';
   const payrollSummary = document.createElement('div');
   payrollSummary.innerHTML = `
-    <div class="bg-[#E5F6FD] p-6 rounded-lg mb-8">
-      <h3 class="text-xl font-semibold mb-4">Payroll Summary</h3>
+    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 shadow-sm">
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">Payroll Summary</h3>
       ${await renderComponent(
         <PayrollSummary 
           startDate={record.payPeriod.startDate} 
@@ -57,13 +56,13 @@ export async function exportToPDF(record: PayrollRecord) {
   summaryContainer.appendChild(payrollSummary);
   container.appendChild(summaryContainer);
 
-  // Add NetPaySummary
+  // Add NetPaySummary with improved styling
   const netPayContainer = document.createElement('div');
   netPayContainer.className = 'mb-8';
   const netPaySummary = document.createElement('div');
   netPaySummary.innerHTML = `
-    <div class="bg-[#E5F6FD] p-6 rounded-lg">
-      <h3 class="text-xl font-semibold mb-4">Overall Net Pay Summary</h3>
+    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 shadow-sm">
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">Overall Net Pay Summary</h3>
       ${await renderComponent(
         <NetPaySummary 
           startDate={record.payPeriod.startDate} 

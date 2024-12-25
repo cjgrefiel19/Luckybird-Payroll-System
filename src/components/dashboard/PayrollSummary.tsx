@@ -9,7 +9,7 @@ import {
 import { TEAM_MEMBERS } from "@/lib/constants";
 import { AttendanceEntry } from "@/lib/types";
 import { formatCurrency } from "@/lib/calculations";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
 interface PayrollSummaryProps {
@@ -83,15 +83,12 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
     });
 
   return (
-    <Card className="bg-[#33C3F0]/20">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl font-bold">Payroll Summary</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="bg-white rounded-md overflow-hidden">
+    <Card className="bg-white">
+      <CardContent className="p-0">
+        <div className="rounded-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-white">
+              <TableRow className="bg-gray-50">
                 <TableHead className="text-left font-semibold">Agent Name</TableHead>
                 <TableHead className="text-center font-semibold">Regular Working Hours</TableHead>
                 <TableHead className="text-center font-semibold">OT Hours</TableHead>
