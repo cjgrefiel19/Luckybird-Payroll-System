@@ -48,7 +48,7 @@ const Index = () => {
           </TabsTrigger>
           <TabsTrigger 
             value="records" 
-            className="text-xl font-bold px-6 py-3 bg-[#D946EF] text-black hover:bg-[#C026D3] transition-colors duration-300 data-[state=active]:bg-[#D946EF] flex-1"
+            className="text-xl font-bold px-6 py-3 bg-[#8E9196] text-black hover:bg-[#7A7D82] transition-colors duration-300 data-[state=active]:bg-[#8E9196] flex-1"
           >
             Payroll Records
           </TabsTrigger>
