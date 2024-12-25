@@ -76,21 +76,41 @@ export function Invoice() {
     if (!element) return;
 
     const opt = {
-      margin: [0.5, 0.5],
+      margin: 1,
       filename: `invoice-${recordId}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2,
         letterRendering: true,
+        useCORS: true,
+        logging: true,
+        backgroundColor: '#ffffff'
       },
       jsPDF: { 
         unit: 'in', 
-        format: 'a4', 
-        orientation: 'landscape',
+        format: 'letter', 
+        orientation: 'portrait',
       }
     };
 
-    html2pdf().set(opt).from(element).save();
+    // Remove any temporary styling
+    const contentDiv = element.querySelector('.bg-white') as HTMLElement;
+    if (contentDiv) {
+      const originalStyle = contentDiv.style.cssText;
+      contentDiv.style.margin = '0';
+      contentDiv.style.padding = '40px';
+      contentDiv.style.maxWidth = 'none';
+
+      html2pdf().set(opt).from(contentDiv).save().then(() => {
+        // Restore original styling
+        contentDiv.style.cssText = originalStyle;
+      });
+    }
+
+    toast({
+      title: "Success",
+      description: "Invoice exported successfully",
+    });
   };
 
   if (!startDate || !endDate) {
@@ -118,6 +138,7 @@ export function Invoice() {
               src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
               alt="LuckyBird Logo"
               className="w-24 h-24 object-contain"
+              crossOrigin="anonymous"
             />
             <div>
               <h1 className="text-3xl font-bold text-primary">LuckyBird</h1>
