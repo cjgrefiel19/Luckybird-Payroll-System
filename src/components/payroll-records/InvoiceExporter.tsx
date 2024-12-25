@@ -7,35 +7,35 @@ import * as ReactDOMServer from 'react-dom/server';
 
 export async function renderInvoiceContent(record: PayrollRecord): Promise<HTMLElement> {
   const tempDiv = document.createElement('div');
-  tempDiv.className = 'p-4 space-y-4 relative max-w-[1200px] mx-auto';
+  tempDiv.className = 'p-4 space-y-8';
   
   const contentDiv = document.createElement('div');
-  contentDiv.className = 'bg-white rounded-lg shadow-lg p-8';
+  contentDiv.className = 'bg-white rounded-lg p-8';
   
+  // Header section with logo and company details
   const headerDiv = document.createElement('div');
-  headerDiv.className = 'flex justify-between items-start mb-8 border-b pb-6';
+  headerDiv.className = 'flex justify-between items-start mb-8';
   headerDiv.innerHTML = `
     <div class="flex items-center gap-6">
       <img 
         src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
         alt="LuckyBird Logo"
         class="w-24 h-24 object-contain"
-        crossOrigin="anonymous"
       />
       <div>
-        <h1 class="text-3xl font-bold text-primary">LuckyBird</h1>
-        <address class="not-italic text-muted-foreground mt-2">
-          732 N. Madelia St.<br />
-          Spokane, WA 99202<br />
-          +1 (509) 508-2229
-        </address>
+        <h1 class="text-3xl font-bold">LuckyBird</h1>
+        <div class="text-muted-foreground mt-2">
+          <p>732 N. Madelia St.</p>
+          <p>Spokane, WA 99202</p>
+          <p>+1 (509) 508-2229</p>
+        </div>
       </div>
     </div>
     <div class="text-right">
       <h2 class="text-2xl font-semibold mb-2">Payroll Invoice</h2>
       <p class="text-muted-foreground">
         Pay Period:<br />
-        ${format(record.payPeriod.startDate, "PP")} - ${format(record.payPeriod.endDate, "PP")}
+        ${format(record.payPeriod.startDate, "MMM d, yyyy")} - ${format(record.payPeriod.endDate, "MMM d, yyyy")}
       </p>
     </div>
   `;
@@ -78,7 +78,7 @@ export async function exportToPDF(record: PayrollRecord) {
   const content = await renderInvoiceContent(record);
   
   const opt = {
-    margin: 1,
+    margin: 0.5,
     filename: `invoice-${record.id}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
@@ -91,7 +91,7 @@ export async function exportToPDF(record: PayrollRecord) {
     jsPDF: { 
       unit: 'in', 
       format: 'letter', 
-      orientation: 'portrait',
+      orientation: 'landscape'
     }
   };
 
