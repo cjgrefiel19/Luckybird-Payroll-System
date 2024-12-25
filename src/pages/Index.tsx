@@ -33,7 +33,7 @@ const Index = () => {
               </div>
             </div>
             
-            <Tabs defaultValue="dashboard">
+            <Tabs defaultValue="dashboard" className="w-full">
               <TabsList className="flex flex-wrap gap-2 w-full justify-start p-0">
                 <TabsTrigger 
                   value="dashboard" 
@@ -66,26 +66,26 @@ const Index = () => {
                   Agent Invoice
                 </TabsTrigger>
               </TabsList>
+
+              <div className="container mx-auto py-6 flex-1">
+                <TabsContent value="schedule">
+                  <TeamSchedule />
+                </TabsContent>
+                <TabsContent value="attendance">
+                  <DailyAttendance />
+                </TabsContent>
+                <TabsContent value="dashboard">
+                  <Dashboard />
+                </TabsContent>
+                <TabsContent value="records">
+                  <PayrollRecords />
+                </TabsContent>
+                <TabsContent value="agent-invoice">
+                  <AgentInvoice />
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
-        </div>
-
-        <div className="container mx-auto py-6 flex-1">
-          <TabsContent value="schedule">
-            <TeamSchedule />
-          </TabsContent>
-          <TabsContent value="attendance">
-            <DailyAttendance />
-          </TabsContent>
-          <TabsContent value="dashboard">
-            <Dashboard />
-          </TabsContent>
-          <TabsContent value="records">
-            <PayrollRecords />
-          </TabsContent>
-          <TabsContent value="agent-invoice">
-            <AgentInvoice />
-          </TabsContent>
         </div>
       </div>
     </div>
