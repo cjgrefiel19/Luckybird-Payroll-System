@@ -7,7 +7,6 @@ export function InvoiceHeader({ logo }: InvoiceHeaderProps) {
     <div 
       className="flex items-start justify-between border-b pb-6 w-full" 
       style={{ 
-        backgroundColor: 'rgba(135, 206, 235, 0.4)',
         margin: '-1.5rem -1.5rem 1.5rem -1.5rem',
         padding: '1.5rem'
       }}
