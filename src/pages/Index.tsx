@@ -11,10 +11,16 @@ const Index = () => {
       <div className="sticky top-0 bg-background z-50 border-b w-full" style={{ 
         backgroundColor: 'rgba(135, 206, 235, 0.4)',
         margin: '0',
-        padding: '0'
+        padding: '0',
+        width: '100vw',
+        position: 'relative',
+        left: '50%',
+        right: '50%',
+        marginLeft: '-50vw',
+        marginRight: '-50vw'
       }}>
         <div className="w-full py-6">
-          <div className="container mx-auto">
+          <div className="container mx-auto px-4">
             <div className="flex items-start mb-8 gap-4">
               <div className="flex items-center gap-4">
                 <img 
