@@ -103,6 +103,19 @@ export function SharedAgentHours() {
     });
   };
 
+  const getWorkDaysBreakdown = () => {
+    const breakdown = entries.reduce((acc, entry) => {
+      const type = entry.shiftType;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(breakdown).map(([type, count]) => ({
+      type,
+      count
+    }));
+  };
+
   const calculateFinalPay = () => {
     const totalEarnings = entries.reduce((sum, entry) => {
       let multiplier = 1;
@@ -120,6 +133,8 @@ export function SharedAgentHours() {
   if (!agentId || !startDate || !endDate) {
     return <div>Invalid link</div>;
   }
+
+  const workDaysBreakdown = getWorkDaysBreakdown();
 
   return (
     <div className="container mx-auto py-8">
@@ -144,6 +159,20 @@ export function SharedAgentHours() {
           <div className="overflow-x-auto">
             <AgentAttendanceTable entries={entries} />
           </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4">Work Days Breakdown</h3>
+              <div className="space-y-2">
+                {workDaysBreakdown.map(({ type, count }) => (
+                  <div key={type} className="flex justify-between items-center">
+                    <span className="text-muted-foreground">{type}:</span>
+                    <span className="font-medium">{count} day{count !== 1 ? 's' : ''}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="mt-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
