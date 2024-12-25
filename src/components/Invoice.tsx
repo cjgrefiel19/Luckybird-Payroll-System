@@ -5,10 +5,18 @@ import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useToast } from "./ui/use-toast";
 import { useParams, useNavigate } from "react-router-dom";
-import { DirectoryEntry } from "@/lib/types";
+import { DirectoryEntry, AttendanceEntry } from "@/lib/types";
 import { InvoiceWatermark } from "./agent-invoice/InvoiceWatermark";
 import html2pdf from "html2pdf.js";
 import { FileDown } from "lucide-react";
+import {
+  calculateTotalHours,
+  calculateOTHours,
+  calculateHolidayHours,
+  calculateLeaveDays,
+  calculateTotalEarnings,
+  calculateDailyEarnings
+} from "@/utils/invoiceCalculations";
 
 export function Invoice() {
   const { recordId } = useParams();
@@ -17,12 +25,23 @@ export function Invoice() {
   const [endDate, setEndDate] = useState<Date>();
   const [isPaid, setIsPaid] = useState(false);
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
+  const [entries, setEntries] = useState<AttendanceEntry[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     const savedDirectory = localStorage.getItem('directoryData');
     if (savedDirectory) {
       setDirectoryData(JSON.parse(savedDirectory));
+    }
+
+    // Load attendance entries
+    const savedEntries = localStorage.getItem('attendanceEntries');
+    if (savedEntries) {
+      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
+        ...entry,
+        date: new Date(entry.date)
+      }));
+      setEntries(parsedEntries);
     }
   }, []);
 
@@ -107,6 +126,12 @@ export function Invoice() {
       entry.name.toLowerCase() === name.toLowerCase()
     );
   };
+
+  const totalHours = calculateTotalHours(entries);
+  const totalOTHours = calculateOTHours(entries);
+  const holidayHours = calculateHolidayHours(entries);
+  const leaveDays = calculateLeaveDays(entries);
+  const totalEarnings = calculateTotalEarnings(entries);
 
   return (
     <div className="relative min-h-screen bg-background overflow-x-hidden">
