@@ -1,11 +1,14 @@
+import { format } from "date-fns";
+
 interface InvoiceHeaderProps {
   agentName: string;
   startDate: Date;
   endDate: Date;
   position?: string;
+  logo?: string;
 }
 
-export function InvoiceHeader({ agentName, startDate, endDate, position }: InvoiceHeaderProps) {
+export function InvoiceHeader({ agentName, startDate, endDate, position, logo }: InvoiceHeaderProps) {
   return (
     <div 
       className="absolute top-0 w-screen" 
@@ -27,7 +30,7 @@ export function InvoiceHeader({ agentName, startDate, endDate, position }: Invoi
         <div className="flex justify-between items-start mb-8">
           <div className="flex items-center gap-6">
             <img 
-              src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
+              src={logo || "/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"}
               alt="LuckyBird Logo"
               className="w-24 h-24 object-contain mix-blend-multiply"
             />
