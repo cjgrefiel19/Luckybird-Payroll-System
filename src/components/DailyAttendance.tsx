@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AttendanceForm } from "./AttendanceForm";
 import { AttendanceTable } from "./AttendanceTable";
-import { AttendanceEntry, DirectoryEntry, PayPeriod } from "@/lib/types";
+import { AttendanceEntry, DirectoryEntry } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { DateRangePicker } from "./dashboard/DateRangePicker";
@@ -22,27 +22,7 @@ export function DailyAttendance() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [selectedAgent, setSelectedAgent] = useState<string>("all");
   const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
-  const [payPeriods, setPayPeriods] = useState<PayPeriod[]>([]);
-  const [selectedPayPeriod, setSelectedPayPeriod] = useState<string | null>(null);
   const { toast } = useToast();
-
-  // Load pay periods from localStorage
-  useEffect(() => {
-    const savedPayPeriods = localStorage.getItem('payPeriods');
-    if (savedPayPeriods) {
-      try {
-        const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
-          ...period,
-          startDate: new Date(period.startDate),
-          endDate: new Date(period.endDate),
-        }));
-        setPayPeriods(parsed);
-        console.log('Loaded pay periods in DailyAttendance:', parsed);
-      } catch (error) {
-        console.error('Error parsing pay periods:', error);
-      }
-    }
-  }, []);
 
   // Load directory data and team members
   useEffect(() => {
@@ -52,6 +32,7 @@ export function DailyAttendance() {
       setDirectoryData(parsedDirectory);
     }
 
+    // Add team members to directory if they don't exist
     const teamMemberNames = TEAM_MEMBERS.map(member => ({
       name: member.name,
       position: member.position || 'Agent'
@@ -63,7 +44,7 @@ export function DailyAttendance() {
     });
   }, []);
 
-  // Load entries from localStorage
+  // Load entries from localStorage on component mount
   useEffect(() => {
     const savedEntries = localStorage.getItem('attendanceEntries');
     if (savedEntries) {
@@ -75,7 +56,7 @@ export function DailyAttendance() {
     }
   }, []);
 
-  // Save entries to localStorage
+  // Save entries to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('attendanceEntries', JSON.stringify(entries));
   }, [entries]);
@@ -111,54 +92,11 @@ export function DailyAttendance() {
     });
   };
 
-  const handleSavePayPeriod = (name: string) => {
-    if (!startDate || !endDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date range first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const newPayPeriod: PayPeriod = {
-      id: crypto.randomUUID(),
-      name,
-      startDate,
-      endDate,
-    };
-
-    setPayPeriods((prev) => [...prev, newPayPeriod]);
-    localStorage.setItem('payPeriods', JSON.stringify([...payPeriods, newPayPeriod]));
-    toast({
-      title: "Success",
-      description: "Pay period saved successfully",
-    });
-  };
-
-  const handleDeletePayPeriod = (id: string) => {
-    setPayPeriods((prev) => {
-      const updated = prev.filter((period) => period.id !== id);
-      localStorage.setItem('payPeriods', JSON.stringify(updated));
-      return updated;
-    });
-    
-    if (selectedPayPeriod === id) {
-      setSelectedPayPeriod(null);
-      setStartDate(undefined);
-      setEndDate(undefined);
-    }
-    
-    toast({
-      title: "Success",
-      description: "Pay period deleted successfully",
-    });
-  };
-
   const filteredEntries = entries.filter((entry) => {
     let matchesDateRange = true;
     let matchesAgent = true;
 
+    // Filter by date range if both dates are selected
     if (startDate && endDate) {
       matchesDateRange = isWithinInterval(new Date(entry.date), {
         start: startDate,
@@ -166,6 +104,7 @@ export function DailyAttendance() {
       });
     }
 
+    // Filter by agent if one is selected
     if (selectedAgent !== "all") {
       matchesAgent = entry.agentName === selectedAgent;
     }
@@ -173,6 +112,7 @@ export function DailyAttendance() {
     return matchesDateRange && matchesAgent;
   });
 
+  // Get unique agent names from entries
   const uniqueAgents = Array.from(new Set(entries.map(entry => entry.agentName)));
 
   return (
@@ -187,27 +127,20 @@ export function DailyAttendance() {
               endDate={endDate}
               onStartDateChange={setStartDate}
               onEndDateChange={setEndDate}
-              payPeriods={payPeriods}
-              selectedPayPeriod={selectedPayPeriod}
-              onPayPeriodSelect={(id) => {
-                setSelectedPayPeriod(id);
-                const period = payPeriods.find(p => p.id === id);
-                if (period) {
-                  setStartDate(new Date(period.startDate));
-                  setEndDate(new Date(period.endDate));
-                }
-              }}
-              onSavePayPeriod={handleSavePayPeriod}
-              onDeletePayPeriod={handleDeletePayPeriod}
+              payPeriods={[]}
+              selectedPayPeriod={null}
+              onPayPeriodSelect={() => {}}
+              onSavePayPeriod={() => {}}
+              onDeletePayPeriod={() => {}}
             />
             <Select
               value={selectedAgent}
               onValueChange={setSelectedAgent}
             >
-              <SelectTrigger className="w-full bg-background">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an agent" />
               </SelectTrigger>
-              <SelectContent className="bg-background">
+              <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
                 {[...new Set([...directoryData.map(member => member.name), ...uniqueAgents])].map((agentName) => (
                   <SelectItem key={agentName} value={agentName}>
