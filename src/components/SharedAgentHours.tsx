@@ -5,10 +5,10 @@ import { AgentAttendanceTable } from "./agent-invoice/AgentAttendanceTable";
 import { AttendanceEntry } from "@/lib/types";
 import { format } from "date-fns";
 import { useToast } from "./ui/use-toast";
-import { Button } from "./ui/button";
 import { AgentSummaryCards } from "./agent-invoice/AgentSummaryCards";
 import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
 import { InvoiceActions } from "./agent-invoice/InvoiceActions";
+import { formatCurrency } from "@/lib/calculations";
 import html2pdf from 'html2pdf.js';
 
 export function SharedAgentHours() {
@@ -18,6 +18,8 @@ export function SharedAgentHours() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [accepted, setAccepted] = useState(false);
+  const [deductions, setDeductions] = useState(0);
+  const [reimbursements, setReimbursements] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,6 +50,17 @@ export function SharedAgentHours() {
       });
 
       setEntries(filteredEntries);
+    }
+
+    // Load net pay data
+    const savedNetPayData = localStorage.getItem('netPayData');
+    if (savedNetPayData) {
+      const netPayData = JSON.parse(savedNetPayData);
+      const agentData = netPayData.find((data: any) => data.agentName === name);
+      if (agentData) {
+        setDeductions(agentData.deductions || 0);
+        setReimbursements(agentData.reimbursements || 0);
+      }
     }
 
     // Check if already accepted
@@ -90,6 +103,20 @@ export function SharedAgentHours() {
     });
   };
 
+  const calculateFinalPay = () => {
+    const totalEarnings = entries.reduce((sum, entry) => {
+      let multiplier = 1;
+      if (entry.shiftType === 'Regular OT') multiplier = 1.25;
+      else if (entry.shiftType === 'Rest Day OT') multiplier = 1.30;
+      else if (entry.shiftType === 'Special Holidays') multiplier = 1.30;
+      else if (entry.shiftType === 'Regular Holidays') multiplier = 2.00;
+      
+      return sum + (entry.totalHours * entry.hourlyRate * multiplier);
+    }, 0);
+
+    return totalEarnings - deductions + reimbursements;
+  };
+
   if (!agentId || !startDate || !endDate) {
     return <div>Invalid link</div>;
   }
@@ -116,6 +143,35 @@ export function SharedAgentHours() {
           
           <div className="overflow-x-auto">
             <AgentAttendanceTable entries={entries} />
+          </div>
+
+          <div className="mt-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-2">Deductions</h3>
+                  <p className="text-2xl font-bold text-red-500">
+                    {formatCurrency(deductions)}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-2">Reimbursements</h3>
+                  <p className="text-2xl font-bold text-green-500">
+                    {formatCurrency(reimbursements)}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-semibold mb-2">Final Pay</h3>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(calculateFinalPay())}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </CardContent>
       </Card>
