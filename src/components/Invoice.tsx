@@ -108,56 +108,72 @@ export function Invoice() {
   };
 
   return (
-    <div className="p-4 space-y-4 relative max-w-[1200px] mx-auto" id="invoice-content">
-      {isPaid && <InvoiceWatermark show={true} />}
-      
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="flex justify-between items-start mb-8 border-b pb-6">
-          <div className="flex items-center gap-6">
-            <img 
-              src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
-              alt="LuckyBird Logo"
-              className="w-24 h-24 object-contain"
-            />
-            <div>
-              <h1 className="text-3xl font-bold text-primary">LuckyBird</h1>
-              <address className="not-italic text-muted-foreground mt-2">
-                732 N. Madelia St.<br />
-                Spokane, WA 99202<br />
-                +1 (509) 508-2229
-              </address>
+    <div className="relative min-h-screen bg-background">
+      <div className="w-full" style={{ 
+        backgroundColor: 'rgba(135, 206, 235, 0.4)',
+        margin: '0',
+        padding: '0',
+        width: '100vw',
+        position: 'relative',
+        left: '50%',
+        right: '50%',
+        marginLeft: '-50vw',
+        marginRight: '-50vw'
+      }}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex items-center gap-6">
+              <img 
+                src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
+                alt="LuckyBird Logo"
+                className="w-24 h-24 object-contain mix-blend-multiply"
+              />
+              <div>
+                <h1 className="text-3xl font-bold text-primary">LuckyBird</h1>
+                <address className="not-italic text-muted-foreground mt-2">
+                  732 N. Madelia St.<br />
+                  Spokane, WA 99202<br />
+                  +1 (509) 508-2229
+                </address>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <h2 className="text-2xl font-semibold mb-2">Payroll Invoice</h2>
+              <p className="text-muted-foreground">
+                Pay Period:<br />
+                {format(startDate, "PP")} - {format(endDate, "PP")}
+              </p>
+              {directoryData.length > 0 && (
+                <div className="mt-4 text-muted-foreground">
+                  {getDirectoryInfo(recordId?.split('-')[0] || '')?.position}
+                </div>
+              )}
             </div>
           </div>
-          
-          <div className="text-right">
-            <h2 className="text-2xl font-semibold mb-2">Payroll Invoice</h2>
-            <p className="text-muted-foreground">
-              Pay Period:<br />
-              {format(startDate, "PP")} - {format(endDate, "PP")}
-            </p>
-            {directoryData.length > 0 && (
-              <div className="mt-4 text-muted-foreground">
-                {getDirectoryInfo(recordId?.split('-')[0] || '')?.position}
-              </div>
-            )}
-          </div>
         </div>
+      </div>
 
-        <div className="space-y-8">
-          <PayrollSummary startDate={startDate} endDate={endDate} />
-          <NetPaySummary startDate={startDate} endDate={endDate} />
-        </div>
-
-        {!isPaid && (
-          <div className="flex justify-end mt-8 gap-4">
-            <Button onClick={handleMarkAsPaid} className="bg-green-500 hover:bg-green-600">
-              Mark as Paid
-            </Button>
-            <Button onClick={handleDownloadPDF} variant="outline">
-              Download PDF
-            </Button>
+      <div className="container mx-auto px-4 py-8">
+        {isPaid && <InvoiceWatermark show={true} />}
+        
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="space-y-8">
+            <PayrollSummary startDate={startDate} endDate={endDate} />
+            <NetPaySummary startDate={startDate} endDate={endDate} />
           </div>
-        )}
+
+          {!isPaid && (
+            <div className="flex justify-end mt-8 gap-4">
+              <Button onClick={handleMarkAsPaid} className="bg-green-500 hover:bg-green-600">
+                Mark as Paid
+              </Button>
+              <Button onClick={handleDownloadPDF} variant="outline">
+                Download PDF
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
