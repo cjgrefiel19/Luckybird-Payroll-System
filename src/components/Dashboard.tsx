@@ -25,16 +25,22 @@ export function Dashboard() {
     const savedEndDate = localStorage.getItem('endDate');
 
     if (savedPayPeriods) {
-      const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
-        ...period,
-        startDate: new Date(period.startDate),
-        endDate: new Date(period.endDate),
-      }));
-      setPayPeriods(parsed);
+      try {
+        const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
+          ...period,
+          startDate: new Date(period.startDate),
+          endDate: new Date(period.endDate),
+        }));
+        setPayPeriods(parsed);
+        console.log('Loaded pay periods:', parsed); // Debug log
+      } catch (error) {
+        console.error('Error parsing pay periods:', error);
+      }
     }
 
     if (savedSelectedPeriod) {
       setSelectedPayPeriod(savedSelectedPeriod);
+      console.log('Selected pay period:', savedSelectedPeriod); // Debug log
     }
 
     if (savedStartDate) {
@@ -48,7 +54,10 @@ export function Dashboard() {
 
   // Save pay periods to localStorage
   useEffect(() => {
-    localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
+    if (payPeriods.length > 0) {
+      localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
+      console.log('Saved pay periods:', payPeriods); // Debug log
+    }
   }, [payPeriods]);
 
   // Save selected pay period and dates to localStorage
@@ -97,6 +106,7 @@ export function Dashboard() {
       title: "Success",
       description: "Pay period saved successfully",
     });
+    console.log('New pay period saved:', newPayPeriod); // Debug log
   };
 
   const handleDeletePayPeriod = (id: string) => {
@@ -216,4 +226,4 @@ export function Dashboard() {
       <NetPaySummary startDate={startDate} endDate={endDate} />
     </div>
   );
-};
+}
