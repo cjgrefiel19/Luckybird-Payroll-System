@@ -83,40 +83,34 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
     });
 
   return (
-    <Card className="bg-[#33C3F0]/50">
-      <CardHeader>
-        <CardTitle className="text-black">Payroll Summary</CardTitle>
+    <Card className="bg-[#33C3F0]/20">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl font-bold">Payroll Summary</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="bg-white rounded-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="text-center text-black">Agent Name</TableHead>
-                <TableHead className="text-center text-black">Regular Working Hours</TableHead>
-                <TableHead className="text-center text-black">OT Hours</TableHead>
-                <TableHead className="text-center text-black">Hourly Rate</TableHead>
-                <TableHead className="text-center text-black">Paid Leaves</TableHead>
-                <TableHead className="text-center text-black">Unpaid Days</TableHead>
-                <TableHead className="text-center text-black">Total Days</TableHead>
+              <TableRow className="bg-white">
+                <TableHead className="text-left font-semibold">Agent Name</TableHead>
+                <TableHead className="text-center font-semibold">Regular Working Hours</TableHead>
+                <TableHead className="text-center font-semibold">OT Hours</TableHead>
+                <TableHead className="text-center font-semibold">Hourly Rate</TableHead>
+                <TableHead className="text-center font-semibold">Paid Leaves</TableHead>
+                <TableHead className="text-center font-semibold">Unpaid Days</TableHead>
+                <TableHead className="text-center font-semibold">Total Days</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {summaryData.map((row) => (
-                <TableRow key={row.name}>
-                  <TableCell className="text-center font-medium text-black">{row.name}</TableCell>
-                  <TableCell className="text-center text-black">
-                    {row.regularHours.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-center text-black">
-                    {row.otHours.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-center text-black">
-                    {formatCurrency(row.hourlyRate)}
-                  </TableCell>
-                  <TableCell className="text-center text-black">{row.paidLeaves}</TableCell>
-                  <TableCell className="text-center text-black">{row.unpaidDays}</TableCell>
-                  <TableCell className="text-center text-black">{row.totalDays}</TableCell>
+                <TableRow key={row.name} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">{row.name}</TableCell>
+                  <TableCell className="text-center">{row.regularHours.toFixed(2)}</TableCell>
+                  <TableCell className="text-center">{row.otHours.toFixed(2)}</TableCell>
+                  <TableCell className="text-center">{formatCurrency(row.hourlyRate)}</TableCell>
+                  <TableCell className="text-center">{row.paidLeaves}</TableCell>
+                  <TableCell className="text-center">{row.unpaidDays}</TableCell>
+                  <TableCell className="text-center">{row.totalDays}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
