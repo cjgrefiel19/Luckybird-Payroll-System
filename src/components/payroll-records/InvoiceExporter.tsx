@@ -52,7 +52,7 @@ export async function exportToPDF(record: PayrollRecord) {
 
   // Payroll Summary table
   const summaryContainer = document.createElement('div');
-  summaryContainer.className = 'bg-[#33C3F0]/10 rounded-lg p-8';
+  summaryContainer.className = 'bg-[#33C3F0] rounded-lg p-8';
   summaryContainer.innerHTML = await renderComponent(
     <PayrollSummary 
       startDate={record.payPeriod.startDate} 
@@ -80,7 +80,7 @@ export async function exportToPDF(record: PayrollRecord) {
 
   // Net Pay Summary table
   const netPayContainer = document.createElement('div');
-  netPayContainer.className = 'bg-[#33C3F0]/10 rounded-lg p-8';
+  netPayContainer.className = 'bg-[#33C3F0] rounded-lg p-8';
   netPayContainer.innerHTML = await renderComponent(
     <NetPaySummary 
       startDate={record.payPeriod.startDate} 
