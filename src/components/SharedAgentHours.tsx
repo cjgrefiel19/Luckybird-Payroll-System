@@ -8,7 +8,8 @@ import { useToast } from "./ui/use-toast";
 import { AgentSummaryCards } from "./agent-invoice/AgentSummaryCards";
 import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
 import { InvoiceActions } from "./agent-invoice/InvoiceActions";
-import { formatCurrency } from "@/lib/calculations";
+import { InvoiceBreakdown } from "./agent-invoice/InvoiceBreakdown";
+import { PaymentDetails } from "./agent-invoice/PaymentDetails";
 import html2pdf from 'html2pdf.js';
 
 export function SharedAgentHours() {
@@ -103,19 +104,6 @@ export function SharedAgentHours() {
     });
   };
 
-  const getWorkDaysBreakdown = () => {
-    const breakdown = entries.reduce((acc, entry) => {
-      const type = entry.shiftType;
-      acc[type] = (acc[type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(breakdown).map(([type, count]) => ({
-      type,
-      count
-    }));
-  };
-
   const calculateFinalPay = () => {
     const totalEarnings = entries.reduce((sum, entry) => {
       let multiplier = 1;
@@ -133,8 +121,6 @@ export function SharedAgentHours() {
   if (!agentId || !startDate || !endDate) {
     return <div>Invalid link</div>;
   }
-
-  const workDaysBreakdown = getWorkDaysBreakdown();
 
   return (
     <div className="container mx-auto py-8">
@@ -160,48 +146,13 @@ export function SharedAgentHours() {
             <AgentAttendanceTable entries={entries} />
           </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Work Days Breakdown</h3>
-              <div className="space-y-2">
-                {workDaysBreakdown.map(({ type, count }) => (
-                  <div key={type} className="flex justify-between items-center">
-                    <span className="text-muted-foreground">{type}:</span>
-                    <span className="font-medium">{count} day{count !== 1 ? 's' : ''}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="mt-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-2">Deductions</h3>
-                  <p className="text-2xl font-bold text-red-500">
-                    {formatCurrency(deductions)}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-2">Reimbursements</h3>
-                  <p className="text-2xl font-bold text-green-500">
-                    {formatCurrency(reimbursements)}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-2">Final Pay</h3>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(calculateFinalPay())}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <InvoiceBreakdown entries={entries} />
+          
+          <PaymentDetails 
+            deductions={deductions}
+            reimbursements={reimbursements}
+            finalPay={calculateFinalPay()}
+          />
         </CardContent>
       </Card>
 
