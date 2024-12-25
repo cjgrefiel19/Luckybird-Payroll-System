@@ -19,16 +19,18 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
   }, []);
 
   return (
-    <Card>
+    <Card className="bg-[#33C3F0]">
       <CardHeader>
-        <CardTitle>Overall Net Pay Summary</CardTitle>
+        <CardTitle className="text-white">Overall Net Pay Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <NetPayCalculator
-          entries={entries}
-          startDate={startDate}
-          endDate={endDate}
-        />
+        <div className="bg-white rounded-md overflow-hidden">
+          <NetPayCalculator
+            entries={entries}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        </div>
       </CardContent>
     </Card>
   );

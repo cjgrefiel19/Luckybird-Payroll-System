@@ -51,7 +51,6 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
         .filter((entry) => entry.shiftType === "Regular Shift")
         .reduce((sum, entry) => sum + entry.totalHours, 0);
 
-      // Group OT hours by type
       const otHours = memberEntries
         .filter((entry) =>
           ["Regular OT", "Rest Day OT", "Special Holidays", "Regular Holidays"].includes(
@@ -84,43 +83,45 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
     });
 
   return (
-    <Card>
+    <Card className="bg-[#33C3F0]">
       <CardHeader>
-        <CardTitle>Payroll Summary</CardTitle>
+        <CardTitle className="text-white">Payroll Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center">Agent Name</TableHead>
-              <TableHead className="text-center">Regular Working Hours</TableHead>
-              <TableHead className="text-center">OT Hours</TableHead>
-              <TableHead className="text-center">Hourly Rate</TableHead>
-              <TableHead className="text-center">Paid Leaves</TableHead>
-              <TableHead className="text-center">Unpaid Days</TableHead>
-              <TableHead className="text-center">Total Days</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {summaryData.map((row) => (
-              <TableRow key={row.name}>
-                <TableCell className="text-center font-medium">{row.name}</TableCell>
-                <TableCell className="text-center">
-                  {row.regularHours.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-center">
-                  {row.otHours.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-center">
-                  {formatCurrency(row.hourlyRate)}
-                </TableCell>
-                <TableCell className="text-center">{row.paidLeaves}</TableCell>
-                <TableCell className="text-center">{row.unpaidDays}</TableCell>
-                <TableCell className="text-center">{row.totalDays}</TableCell>
+        <div className="bg-white rounded-md overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Agent Name</TableHead>
+                <TableHead className="text-center">Regular Working Hours</TableHead>
+                <TableHead className="text-center">OT Hours</TableHead>
+                <TableHead className="text-center">Hourly Rate</TableHead>
+                <TableHead className="text-center">Paid Leaves</TableHead>
+                <TableHead className="text-center">Unpaid Days</TableHead>
+                <TableHead className="text-center">Total Days</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {summaryData.map((row) => (
+                <TableRow key={row.name}>
+                  <TableCell className="text-center font-medium">{row.name}</TableCell>
+                  <TableCell className="text-center">
+                    {row.regularHours.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {row.otHours.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {formatCurrency(row.hourlyRate)}
+                  </TableCell>
+                  <TableCell className="text-center">{row.paidLeaves}</TableCell>
+                  <TableCell className="text-center">{row.unpaidDays}</TableCell>
+                  <TableCell className="text-center">{row.totalDays}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
