@@ -109,18 +109,16 @@ export function Invoice() {
 
   return (
     <div className="relative min-h-screen bg-background">
-      <div className="w-full" style={{ 
-        backgroundColor: 'rgba(135, 206, 235, 0.4)',
-        margin: '0',
-        padding: '0',
-        width: '100vw',
-        position: 'relative',
-        left: '50%',
-        right: '50%',
-        marginLeft: '-50vw',
-        marginRight: '-50vw'
-      }}>
-        <div className="container mx-auto px-4 py-8">
+      <div 
+        className="absolute inset-x-0 top-0" 
+        style={{ 
+          backgroundColor: 'rgba(135, 206, 235, 0.4)',
+          width: '100vw',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-6">
               <img 
@@ -154,7 +152,7 @@ export function Invoice() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4" style={{ paddingTop: "calc(2rem + 200px)" }}>
         {isPaid && <InvoiceWatermark show={true} />}
         
         <div className="bg-white rounded-lg shadow-lg p-8">
