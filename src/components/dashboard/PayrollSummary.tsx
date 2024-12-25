@@ -83,7 +83,7 @@ export function PayrollSummary({ startDate, endDate }: PayrollSummaryProps) {
     });
 
   return (
-    <Card className="bg-[#33C3F0]">
+    <Card className="bg-[#33C3F0]/30">
       <CardHeader>
         <CardTitle className="text-white">Payroll Summary</CardTitle>
       </CardHeader>

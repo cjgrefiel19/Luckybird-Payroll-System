@@ -19,7 +19,7 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
   }, []);
 
   return (
-    <Card className="bg-[#33C3F0]">
+    <Card className="bg-[#33C3F0]/30">
       <CardHeader>
         <CardTitle className="text-white">Overall Net Pay Summary</CardTitle>
       </CardHeader>
