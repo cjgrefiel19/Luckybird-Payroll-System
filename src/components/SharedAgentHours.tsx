@@ -98,12 +98,7 @@ export function SharedAgentHours() {
     <div className="container mx-auto py-8">
       <Card>
         <CardContent className="p-6 space-y-6" id="invoice-content">
-          <InvoiceHeader 
-            agentName={agentName}
-            startDate={startDate}
-            endDate={endDate}
-            logo="/lovable-uploads/721bca4a-5642-4aa3-b371-870b16bf31fb.png"
-          />
+          <InvoiceHeader logo="/lovable-uploads/721bca4a-5642-4aa3-b371-870b16bf31fb.png" />
           
           <div className="flex justify-between items-center">
             <div>

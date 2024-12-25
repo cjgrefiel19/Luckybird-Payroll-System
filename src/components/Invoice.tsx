@@ -7,9 +7,6 @@ import { useToast } from "./ui/use-toast";
 import { useParams, useNavigate } from "react-router-dom";
 import { DirectoryEntry, AttendanceEntry } from "@/lib/types";
 import { InvoiceWatermark } from "./agent-invoice/InvoiceWatermark";
-import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
-import { SummaryCards } from "./agent-invoice/SummaryCards";
-import { InvoiceTable } from "./agent-invoice/InvoiceTable";
 import html2pdf from "html2pdf.js";
 import { FileDown } from "lucide-react";
 import {
@@ -18,6 +15,7 @@ import {
   calculateHolidayHours,
   calculateLeaveDays,
   calculateTotalEarnings,
+  calculateDailyEarnings
 } from "@/utils/invoiceCalculations";
 
 export function Invoice() {
@@ -135,32 +133,133 @@ export function Invoice() {
   const leaveDays = calculateLeaveDays(entries);
   const totalEarnings = calculateTotalEarnings(entries);
 
-  const agentName = recordId?.split('-')[0] || '';
-  const position = getDirectoryInfo(agentName)?.position;
-
   return (
     <div className="relative min-h-screen bg-background overflow-x-hidden">
-      <InvoiceHeader 
-        agentName={agentName}
-        startDate={startDate}
-        endDate={endDate}
-        position={position}
-      />
+      <div 
+        className="absolute top-0 w-screen" 
+        style={{ 
+          backgroundColor: 'rgba(135, 206, 235, 0.4)',
+          left: '50%',
+          right: '50%',
+          transform: 'translateX(-50%)',
+          marginLeft: '-50vw',
+          marginRight: '-50vw',
+          paddingBottom: '2rem'
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold mb-6 text-primary">
+            Agent Invoice View - {recordId?.split('-')[0]}
+          </h1>
+          
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex items-center gap-6">
+              <img 
+                src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
+                alt="LuckyBird Logo"
+                className="w-24 h-24 object-contain mix-blend-multiply"
+              />
+              <div>
+                <h1 className="text-3xl font-bold text-primary">LuckyBird</h1>
+                <address className="not-italic text-muted-foreground mt-2">
+                  732 N. Madelia St.<br />
+                  Spokane, WA 99202<br />
+                  +1 (509) 508-2229
+                </address>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <h2 className="text-2xl font-semibold mb-2">Payroll Invoice</h2>
+              <p className="text-muted-foreground">
+                Pay Period:<br />
+                {format(startDate!, "PP")} - {format(endDate!, "PP")}
+              </p>
+              {directoryData.length > 0 && (
+                <div className="mt-4 text-muted-foreground">
+                  {getDirectoryInfo(recordId?.split('-')[0] || '')?.position}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4" style={{ paddingTop: "calc(2rem + 200px)" }}>
         {isPaid && <InvoiceWatermark show={true} />}
         
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="space-y-8">
-            <SummaryCards
-              totalHours={totalHours}
-              totalOTHours={totalOTHours}
-              holidayHours={holidayHours}
-              leaveDays={leaveDays}
-              totalEarnings={totalEarnings}
-            />
-            
-            <InvoiceTable entries={entries} />
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="bg-[#8E9196] p-4 rounded-lg">
+                <div className="text-2xl font-bold text-black text-center">
+                  {totalHours?.toFixed(2)}
+                </div>
+                <p className="text-sm text-black text-center">Total Hours</p>
+              </div>
+              <div className="bg-[#8A898C] p-4 rounded-lg">
+                <div className="text-2xl font-bold text-black text-center">
+                  {totalOTHours?.toFixed(2)}
+                </div>
+                <p className="text-sm text-black text-center">Total OT Hours</p>
+              </div>
+              <div className="bg-[#999999] p-4 rounded-lg">
+                <div className="text-2xl font-bold text-black text-center">
+                  {holidayHours?.toFixed(2)}
+                </div>
+                <p className="text-sm text-black text-center">Holiday Hours</p>
+              </div>
+              <div className="bg-[#8E9196] p-4 rounded-lg">
+                <div className="text-2xl font-bold text-black text-center">
+                  {leaveDays}
+                </div>
+                <p className="text-sm text-black text-center">Leave Days</p>
+              </div>
+              <div className="bg-[#8A898C] p-4 rounded-lg">
+                <div className="text-2xl font-bold text-black text-center">
+                  ${totalEarnings?.toFixed(2)}
+                </div>
+                <p className="text-sm text-black text-center">Total Earnings</p>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-[#f2f2f2]">
+                    <th className="p-3 text-left border-b">Date</th>
+                    <th className="p-3 text-left border-b">Time In</th>
+                    <th className="p-3 text-left border-b">Time Out</th>
+                    <th className="p-3 text-left border-b">Total Hours</th>
+                    <th className="p-3 text-left border-b">Shift Type</th>
+                    <th className="p-3 text-right border-b">Hourly Rate</th>
+                    <th className="p-3 text-right border-b">Daily Earnings</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries?.map((entry, index) => (
+                    <tr 
+                      key={index}
+                      className="bg-[rgba(211,211,211,0.1)] border-b hover:bg-gray-50"
+                    >
+                      <td className="p-3">{format(new Date(entry.date), "PP")}</td>
+                      <td className="p-3">{entry.timeIn}</td>
+                      <td className="p-3">{entry.timeOut}</td>
+                      <td className="p-3">{entry.totalHours.toFixed(2)}</td>
+                      <td className="p-3">{entry.shiftType}</td>
+                      <td className="p-3 text-right">${entry.hourlyRate.toFixed(2)}</td>
+                      <td className="p-3 text-right">
+                        ${calculateDailyEarnings(
+                          entry.hourlyRate,
+                          entry.totalHours,
+                          entry.shiftType
+                        ).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {!isPaid && (
