@@ -5,6 +5,9 @@ import { format } from "date-fns";
 import html2pdf from 'html2pdf.js';
 
 export async function exportToPDF(record: PayrollRecord) {
+  // Create container for all content
+  const container = document.createElement('div');
+  
   // First page container
   const firstPage = document.createElement('div');
   firstPage.className = 'p-8 bg-white min-h-screen';
@@ -40,7 +43,7 @@ export async function exportToPDF(record: PayrollRecord) {
   `;
   firstPage.appendChild(header);
 
-  // Payroll Summary section with title
+  // Payroll Summary title
   const summaryTitle = document.createElement('h3');
   summaryTitle.className = 'text-xl font-semibold mb-4 text-gray-800';
   summaryTitle.textContent = 'Payroll Summary';
@@ -56,36 +59,39 @@ export async function exportToPDF(record: PayrollRecord) {
     />
   );
   firstPage.appendChild(summaryContainer);
+  container.appendChild(firstPage);
 
-  // Second page container
+  // Second page container with Net Pay Summary
   const secondPage = document.createElement('div');
   secondPage.className = 'p-8 bg-white min-h-screen';
   secondPage.style.pageBreakBefore = 'always';
-
-  // Net Pay Summary title for second page
+  
+  // Create a wrapper for the Net Pay content to keep it together
+  const netPayWrapper = document.createElement('div');
+  netPayWrapper.style.pageBreakInside = 'avoid';
+  netPayWrapper.style.pageBreakBefore = 'always';
+  
+  // Net Pay Summary title
   const netPayTitle = document.createElement('h3');
   netPayTitle.className = 'text-xl font-semibold mb-4 text-gray-800';
   netPayTitle.textContent = 'Overall Net Pay Summary';
-  secondPage.appendChild(netPayTitle);
+  netPayWrapper.appendChild(netPayTitle);
 
-  // Add NetPaySummary component to second page
+  // Net Pay Summary content
   const netPayContainer = document.createElement('div');
   netPayContainer.className = 'bg-[#33C3F0]/5 rounded-lg p-8';
-  netPayContainer.style.breakInside = 'avoid';
   netPayContainer.innerHTML = await renderComponent(
     <NetPaySummary 
       startDate={record.payPeriod.startDate} 
       endDate={record.payPeriod.endDate}
     />
   );
-  secondPage.appendChild(netPayContainer);
-
-  // Create a wrapper for both pages
-  const container = document.createElement('div');
-  container.appendChild(firstPage);
+  netPayWrapper.appendChild(netPayContainer);
+  
+  secondPage.appendChild(netPayWrapper);
   container.appendChild(secondPage);
 
-  // Configure PDF options for legal size and landscape orientation
+  // Configure PDF options
   const opt = {
     margin: [0.5, 0.5],
     filename: `payroll-invoice-${format(record.payPeriod.startDate, "yyyy-MM-dd")}.pdf`,
@@ -102,7 +108,7 @@ export async function exportToPDF(record: PayrollRecord) {
       format: 'legal', 
       orientation: 'landscape'
     },
-    pagebreak: { mode: 'avoid-all' }
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
   // Generate PDF
