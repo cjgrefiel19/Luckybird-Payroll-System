@@ -7,6 +7,7 @@ import { useToast } from "./ui/use-toast";
 import { useParams, useNavigate } from "react-router-dom";
 import { DirectoryEntry } from "@/lib/types";
 import { InvoiceWatermark } from "./agent-invoice/InvoiceWatermark";
+import html2pdf from "html2pdf.js";
 
 export function Invoice() {
   const { recordId } = useParams();
@@ -18,7 +19,6 @@ export function Invoice() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load directory data
     const savedDirectory = localStorage.getItem('directoryData');
     if (savedDirectory) {
       setDirectoryData(JSON.parse(savedDirectory));
@@ -71,6 +71,28 @@ export function Invoice() {
     });
   };
 
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('invoice-content');
+    if (!element) return;
+
+    const opt = {
+      margin: [0.5, 0.5],
+      filename: `invoice-${recordId}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        letterRendering: true,
+      },
+      jsPDF: { 
+        unit: 'in', 
+        format: 'a4', 
+        orientation: 'landscape',
+      }
+    };
+
+    html2pdf().set(opt).from(element).save();
+  };
+
   if (!startDate || !endDate) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,7 +101,6 @@ export function Invoice() {
     );
   }
 
-  // Find directory entry for the current record
   const getDirectoryInfo = (name: string) => {
     return directoryData.find(entry => 
       entry.name.toLowerCase() === name.toLowerCase()
@@ -87,34 +108,57 @@ export function Invoice() {
   };
 
   return (
-    <div className="p-4 space-y-4 relative">
+    <div className="p-4 space-y-4 relative max-w-[1200px] mx-auto" id="invoice-content">
       {isPaid && <InvoiceWatermark show={true} />}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Payroll Invoice</h1>
-          {directoryData.length > 0 && (
-            <div className="mt-2 text-gray-600">
-              {getDirectoryInfo(recordId?.split('-')[0] || '')?.position}
+      
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="flex justify-between items-start mb-8 border-b pb-6">
+          <div className="flex items-center gap-6">
+            <img 
+              src="/lovable-uploads/91427171-914b-45a1-bfb1-e79ea0029866.png"
+              alt="LuckyBird Logo"
+              className="w-24 h-24 object-contain"
+            />
+            <div>
+              <h1 className="text-3xl font-bold text-primary">LuckyBird</h1>
+              <address className="not-italic text-muted-foreground mt-2">
+                732 N. Madelia St.<br />
+                Spokane, WA 99202<br />
+                +1 (509) 508-2229
+              </address>
             </div>
-          )}
+          </div>
+          
+          <div className="text-right">
+            <h2 className="text-2xl font-semibold mb-2">Payroll Invoice</h2>
+            <p className="text-muted-foreground">
+              Pay Period:<br />
+              {format(startDate, "PP")} - {format(endDate, "PP")}
+            </p>
+            {directoryData.length > 0 && (
+              <div className="mt-4 text-muted-foreground">
+                {getDirectoryInfo(recordId?.split('-')[0] || '')?.position}
+              </div>
+            )}
+          </div>
         </div>
-        <p className="text-lg">
-          Pay Period: {format(startDate, "PP")} - {format(endDate, "PP")}
-        </p>
-      </div>
 
-      <div className="space-y-6">
-        <PayrollSummary startDate={startDate} endDate={endDate} />
-        <NetPaySummary startDate={startDate} endDate={endDate} />
-      </div>
-
-      {!isPaid && (
-        <div className="flex justify-end mt-6">
-          <Button onClick={handleMarkAsPaid} className="bg-green-500 hover:bg-green-600">
-            Mark as Paid
-          </Button>
+        <div className="space-y-8">
+          <PayrollSummary startDate={startDate} endDate={endDate} />
+          <NetPaySummary startDate={startDate} endDate={endDate} />
         </div>
-      )}
+
+        {!isPaid && (
+          <div className="flex justify-end mt-8 gap-4">
+            <Button onClick={handleMarkAsPaid} className="bg-green-500 hover:bg-green-600">
+              Mark as Paid
+            </Button>
+            <Button onClick={handleDownloadPDF} variant="outline">
+              Download PDF
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
