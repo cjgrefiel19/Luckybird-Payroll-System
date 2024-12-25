@@ -19,9 +19,9 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
   }, []);
 
   return (
-    <Card className="bg-[#33C3F0]/10">
+    <Card className="bg-[#33C3F0]/50">
       <CardHeader>
-        <CardTitle className="text-white">Overall Net Pay Summary</CardTitle>
+        <CardTitle className="text-black">Overall Net Pay Summary</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="bg-white rounded-md overflow-hidden">
