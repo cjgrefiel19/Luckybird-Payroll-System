@@ -3,6 +3,7 @@ import { NetPayData } from "@/lib/types";
 import { calculateTotalEarnings, filterEntriesByDateRange } from "./utils/netPayCalculations";
 import { NetPayCalculatorProps } from "./types/netPay";
 import { NetPayTableRow } from "./NetPayTableRow";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,

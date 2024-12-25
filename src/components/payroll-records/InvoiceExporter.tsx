@@ -2,6 +2,7 @@ import { PayrollSummary } from "../dashboard/PayrollSummary";
 import { NetPaySummary } from "../dashboard/NetPaySummary";
 import { PayrollRecord } from "@/lib/types";
 import { format } from "date-fns";
+import html2pdf from 'html2pdf.js';
 
 export async function exportToPDF(record: PayrollRecord) {
   const container = document.createElement('div');
