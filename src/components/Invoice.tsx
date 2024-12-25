@@ -138,7 +138,7 @@ export function Invoice() {
       <div 
         className="absolute top-0 w-screen" 
         style={{ 
-          backgroundColor: 'rgba(135, 206, 235, 0.4)',
+          backgroundColor: 'white',
           left: '50%',
           right: '50%',
           transform: 'translateX(-50%)',
@@ -240,7 +240,8 @@ export function Invoice() {
                   {entries?.map((entry, index) => (
                     <tr 
                       key={index}
-                      className="bg-[rgba(211,211,211,0.1)] border-b hover:bg-gray-50"
+                      className="hover:bg-gray-50"
+                      style={{ backgroundColor: 'rgba(211, 211, 211, 0.2)' }}
                     >
                       <td className="p-3">{format(new Date(entry.date), "PP")}</td>
                       <td className="p-3">{entry.timeIn}</td>
