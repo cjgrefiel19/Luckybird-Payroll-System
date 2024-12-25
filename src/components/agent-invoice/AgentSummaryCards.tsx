@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/calculations";
 import { AttendanceEntry } from "@/lib/types";
 
 export interface AgentSummaryCardsProps {
@@ -41,42 +42,42 @@ export function AgentSummaryCards({ filteredEntries }: AgentSummaryCardsProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <Card className="bg-[#8E9196]">
+      <Card>
         <CardContent className="pt-6 text-center">
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold">
             {totalWorkingHours.toFixed(2)}
           </div>
-          <p className="text-sm text-white">Total Hours</p>
+          <p className="text-sm text-muted-foreground">Total Hours</p>
         </CardContent>
       </Card>
-      <Card className="bg-[#8A898C]">
+      <Card>
         <CardContent className="pt-6 text-center">
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold">
             {totalOTHours.toFixed(2)}
           </div>
-          <p className="text-sm text-white">Total OT Hours</p>
+          <p className="text-sm text-muted-foreground">Total OT Hours</p>
         </CardContent>
       </Card>
-      <Card className="bg-[#999999]">
+      <Card>
         <CardContent className="pt-6 text-center">
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold">
             {holidayHours.toFixed(2)}
           </div>
-          <p className="text-sm text-white">Holiday Hours</p>
+          <p className="text-sm text-muted-foreground">Holiday Hours</p>
         </CardContent>
       </Card>
-      <Card className="bg-[#8E9196]">
+      <Card>
         <CardContent className="pt-6 text-center">
-          <div className="text-2xl font-bold text-white">{leaveDays}</div>
-          <p className="text-sm text-white">Leave Days</p>
+          <div className="text-2xl font-bold">{leaveDays}</div>
+          <p className="text-sm text-muted-foreground">Leave Days</p>
         </CardContent>
       </Card>
-      <Card className="bg-[#8A898C]">
+      <Card>
         <CardContent className="pt-6 text-center">
-          <div className="text-2xl font-bold text-white">
-            ${totalEarnings.toFixed(2)}
+          <div className="text-2xl font-bold">
+            {formatCurrency(totalEarnings)}
           </div>
-          <p className="text-sm text-white">Total Earnings</p>
+          <p className="text-sm text-muted-foreground">Total Earnings</p>
         </CardContent>
       </Card>
     </div>

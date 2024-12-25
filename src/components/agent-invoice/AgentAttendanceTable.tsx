@@ -18,22 +18,11 @@ interface AgentAttendanceTableProps {
 }
 
 export function AgentAttendanceTable({ entries }: AgentAttendanceTableProps) {
-  // Array of pastel colors for alternating rows
-  const rowColors = [
-    'bg-[#F2FCE2]', // Soft Green
-    'bg-[#FEF7CD]', // Soft Yellow
-    'bg-[#FEC6A1]', // Soft Orange
-    'bg-[#E5DEFF]', // Soft Purple
-    'bg-[#FFDEE2]', // Soft Pink
-    'bg-[#FDE1D3]', // Soft Peach
-    'bg-[#D3E4FD]', // Soft Blue
-  ];
-
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-100">
+          <TableRow>
             <TableHead>Date</TableHead>
             <TableHead className="text-center">Time In</TableHead>
             <TableHead className="text-center">Time Out</TableHead>
@@ -52,10 +41,7 @@ export function AgentAttendanceTable({ entries }: AgentAttendanceTableProps) {
             );
 
             return (
-              <TableRow 
-                key={index}
-                className={`${rowColors[index % rowColors.length]} hover:bg-gray-100/50 transition-colors`}
-              >
+              <TableRow key={index}>
                 <TableCell>{format(new Date(entry.date), "PP")}</TableCell>
                 <TableCell className="text-center">{entry.timeIn}</TableCell>
                 <TableCell className="text-center">{entry.timeOut}</TableCell>
