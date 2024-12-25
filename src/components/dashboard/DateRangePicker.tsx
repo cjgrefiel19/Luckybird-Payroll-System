@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { PayPeriodSelect } from "./PayPeriodSelect";
 import { SavePayPeriod } from "./SavePayPeriod";
+import { useEffect } from "react";
 
 interface DateRangePickerProps {
   startDate?: Date;
@@ -35,6 +36,16 @@ export function DateRangePicker({
   onSavePayPeriod,
   onDeletePayPeriod,
 }: DateRangePickerProps) {
+  // Load the last selected pay period on component mount
+  useEffect(() => {
+    if (!selectedPayPeriod && payPeriods.length > 0) {
+      const lastPeriod = payPeriods[payPeriods.length - 1];
+      onStartDateChange(lastPeriod.startDate);
+      onEndDateChange(lastPeriod.endDate);
+      onPayPeriodSelect(lastPeriod.id);
+    }
+  }, [payPeriods, selectedPayPeriod, onStartDateChange, onEndDateChange, onPayPeriodSelect]);
+
   return (
     <div className="flex flex-wrap gap-4 items-center">
       <div className="flex-1 min-w-[200px]">
