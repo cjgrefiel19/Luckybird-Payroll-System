@@ -108,14 +108,17 @@ export function Invoice() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background overflow-x-hidden">
       <div 
-        className="absolute inset-x-0 top-0" 
+        className="absolute top-0" 
         style={{ 
           backgroundColor: 'rgba(135, 206, 235, 0.4)',
           width: '100vw',
           left: '50%',
           transform: 'translateX(-50%)',
+          marginRight: '-50vw',
+          marginLeft: '-50vw',
+          right: '50%',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 py-8">
