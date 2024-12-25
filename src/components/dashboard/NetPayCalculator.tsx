@@ -39,7 +39,6 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   const activeAgents = [...new Set(filteredEntries.map(entry => entry.agentName))];
 
   const handleDeductionsChange = (agentName: string, value: string) => {
-    // Remove any non-numeric characters except decimal point
     const sanitizedValue = value.replace(/[^\d.]/g, '');
     const numValue = sanitizedValue === '' ? 0 : parseFloat(sanitizedValue);
     
@@ -55,7 +54,6 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   };
 
   const handleReimbursementsChange = (agentName: string, value: string) => {
-    // Remove any non-numeric characters except decimal point
     const sanitizedValue = value.replace(/[^\d.]/g, '');
     const numValue = sanitizedValue === '' ? 0 : parseFloat(sanitizedValue);
     
@@ -106,29 +104,51 @@ export function NetPayCalculator({ entries, startDate, endDate }: NetPayCalculat
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead className="text-center">Agent Name</TableHead>
-          <TableHead className="text-center">Total Earnings</TableHead>
-          <TableHead className="text-center">Deductions</TableHead>
-          <TableHead className="text-center">Reimbursements</TableHead>
-          <TableHead className="text-center">Net Pay</TableHead>
+        <TableRow className="bg-gray-100/80">
+          <TableHead className="text-left py-4 px-6 text-gray-900 font-semibold">Agent Name</TableHead>
+          <TableHead className="text-center py-4 px-6 text-gray-900 font-semibold">Total Earnings</TableHead>
+          <TableHead className="text-center py-4 px-6 text-gray-900 font-semibold">Deductions</TableHead>
+          <TableHead className="text-center py-4 px-6 text-gray-900 font-semibold">Reimbursements</TableHead>
+          <TableHead className="text-center py-4 px-6 text-gray-900 font-semibold">Net Pay</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {summaryData.map((row) => (
-          <NetPayTableRow
+        {summaryData.map((row, index) => (
+          <TableRow 
             key={row.name}
-            {...row}
-            onDeductionsChange={(value) => handleDeductionsChange(row.name, value)}
-            onReimbursementsChange={(value) => handleReimbursementsChange(row.name, value)}
-          />
+            className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
+          >
+            <TableCell className="py-4 px-6">{row.name}</TableCell>
+            <TableCell className="text-center py-4 px-6">{formatCurrency(row.totalEarnings)}</TableCell>
+            <TableCell className="text-center py-4 px-6">
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={row.deductions === 0 ? '' : row.deductions.toString()}
+                onChange={(e) => handleDeductionsChange(row.name, e.target.value)}
+                className="w-32 mx-auto text-center h-10"
+                placeholder="0.00"
+              />
+            </TableCell>
+            <TableCell className="text-center py-4 px-6">
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={row.reimbursements === 0 ? '' : row.reimbursements.toString()}
+                onChange={(e) => handleReimbursementsChange(row.name, e.target.value)}
+                className="w-32 mx-auto text-center h-10"
+                placeholder="0.00"
+              />
+            </TableCell>
+            <TableCell className="text-center py-4 px-6">{formatCurrency(row.netPay)}</TableCell>
+          </TableRow>
         ))}
-        <TableRow className="font-bold bg-muted/50">
-          <TableCell className="text-center">TOTAL</TableCell>
-          <TableCell className="text-center">{formatCurrency(totals.totalEarnings)}</TableCell>
-          <TableCell className="text-center">{formatCurrency(totals.deductions)}</TableCell>
-          <TableCell className="text-center">{formatCurrency(totals.reimbursements)}</TableCell>
-          <TableCell className="text-center">{formatCurrency(totals.netPay)}</TableCell>
+        <TableRow className="font-bold bg-gray-100/50">
+          <TableCell className="text-center py-4 px-6">TOTAL</TableCell>
+          <TableCell className="text-center py-4 px-6">{formatCurrency(totals.totalEarnings)}</TableCell>
+          <TableCell className="text-center py-4 px-6">{formatCurrency(totals.deductions)}</TableCell>
+          <TableCell className="text-center py-4 px-6">{formatCurrency(totals.reimbursements)}</TableCell>
+          <TableCell className="text-center py-4 px-6">{formatCurrency(totals.netPay)}</TableCell>
         </TableRow>
       </TableBody>
     </Table>

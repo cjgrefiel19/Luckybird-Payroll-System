@@ -1,7 +1,6 @@
-import { PayrollRecord } from "@/lib/types";
 import { PayrollSummary } from "../dashboard/PayrollSummary";
 import { NetPaySummary } from "../dashboard/NetPaySummary";
-import html2pdf from "html2pdf.js";
+import { PayrollRecord } from "@/lib/types";
 import { format } from "date-fns";
 
 export async function exportToPDF(record: PayrollRecord) {
@@ -10,7 +9,7 @@ export async function exportToPDF(record: PayrollRecord) {
   
   // Add header section with improved styling
   const header = document.createElement('div');
-  header.className = 'flex justify-between items-start mb-12 border-b pb-6';
+  header.className = 'flex justify-between items-start mb-12';
   header.innerHTML = `
     <div class="flex items-start gap-6">
       <img 
@@ -43,8 +42,7 @@ export async function exportToPDF(record: PayrollRecord) {
   summaryContainer.className = 'mb-12';
   const payrollSummary = document.createElement('div');
   payrollSummary.innerHTML = `
-    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 shadow-sm">
-      <h3 class="text-xl font-semibold mb-4 text-gray-800">Payroll Summary</h3>
+    <div class="bg-[#33C3F0]/20 rounded-lg p-8">
       ${await renderComponent(
         <PayrollSummary 
           startDate={record.payPeriod.startDate} 
@@ -61,8 +59,7 @@ export async function exportToPDF(record: PayrollRecord) {
   netPayContainer.className = 'mb-8';
   const netPaySummary = document.createElement('div');
   netPaySummary.innerHTML = `
-    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 shadow-sm">
-      <h3 class="text-xl font-semibold mb-4 text-gray-800">Overall Net Pay Summary</h3>
+    <div class="bg-[#33C3F0]/20 rounded-lg p-8">
       ${await renderComponent(
         <NetPaySummary 
           startDate={record.payPeriod.startDate} 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { AttendanceEntry } from "@/lib/types";
 import { NetPayCalculator } from "./NetPayCalculator";
 import { NetPaySummaryProps } from "./types/netPay";
@@ -19,12 +19,9 @@ export function NetPaySummary({ startDate, endDate }: NetPaySummaryProps) {
   }, []);
 
   return (
-    <Card className="bg-[#33C3F0]/50">
-      <CardHeader>
-        <CardTitle className="text-black">Overall Net Pay Summary</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="bg-white rounded-md overflow-hidden">
+    <Card className="bg-white">
+      <CardContent className="p-0">
+        <div className="rounded-md overflow-hidden">
           <NetPayCalculator
             entries={entries}
             startDate={startDate}
