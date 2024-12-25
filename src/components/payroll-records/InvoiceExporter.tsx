@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import html2pdf from 'html2pdf.js';
 
 export async function exportToPDF(record: PayrollRecord) {
-  // Create container for all content
+  // Create main container
   const container = document.createElement('div');
   
   // First page container
@@ -51,7 +51,7 @@ export async function exportToPDF(record: PayrollRecord) {
 
   // Add PayrollSummary component
   const summaryContainer = document.createElement('div');
-  summaryContainer.className = 'mb-12 bg-[#33C3F0]/5 rounded-lg p-8';
+  summaryContainer.className = 'bg-[#33C3F0]/5 rounded-lg p-8';
   summaryContainer.innerHTML = await renderComponent(
     <PayrollSummary 
       startDate={record.payPeriod.startDate} 
@@ -61,23 +61,22 @@ export async function exportToPDF(record: PayrollRecord) {
   firstPage.appendChild(summaryContainer);
   container.appendChild(firstPage);
 
-  // Second page container with Net Pay Summary
+  // Second page container
   const secondPage = document.createElement('div');
   secondPage.className = 'p-8 bg-white min-h-screen';
   secondPage.style.pageBreakBefore = 'always';
-  
-  // Create a wrapper for the Net Pay content to keep it together
-  const netPayWrapper = document.createElement('div');
-  netPayWrapper.style.pageBreakInside = 'avoid';
-  netPayWrapper.style.pageBreakBefore = 'always';
+
+  // Create a single wrapper for Net Pay content
+  const netPayContent = document.createElement('div');
+  netPayContent.style.pageBreakInside = 'avoid';
   
   // Net Pay Summary title
   const netPayTitle = document.createElement('h3');
   netPayTitle.className = 'text-xl font-semibold mb-4 text-gray-800';
   netPayTitle.textContent = 'Overall Net Pay Summary';
-  netPayWrapper.appendChild(netPayTitle);
+  netPayContent.appendChild(netPayTitle);
 
-  // Net Pay Summary content
+  // Net Pay Summary table
   const netPayContainer = document.createElement('div');
   netPayContainer.className = 'bg-[#33C3F0]/5 rounded-lg p-8';
   netPayContainer.innerHTML = await renderComponent(
@@ -86,9 +85,10 @@ export async function exportToPDF(record: PayrollRecord) {
       endDate={record.payPeriod.endDate}
     />
   );
-  netPayWrapper.appendChild(netPayContainer);
+  netPayContent.appendChild(netPayContainer);
   
-  secondPage.appendChild(netPayWrapper);
+  // Add net pay content to second page
+  secondPage.appendChild(netPayContent);
   container.appendChild(secondPage);
 
   // Configure PDF options
@@ -108,7 +108,7 @@ export async function exportToPDF(record: PayrollRecord) {
       format: 'legal', 
       orientation: 'landscape'
     },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    pagebreak: { mode: ['css', 'avoid-all'] }
   };
 
   // Generate PDF
