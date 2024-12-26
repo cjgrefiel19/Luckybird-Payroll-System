@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { TeamMember } from "@/lib/types";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -40,6 +41,8 @@ interface TeamScheduleFormProps {
 
 export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleFormProps) {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: member || {
@@ -56,6 +59,7 @@ export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleForm
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values as TeamMember);
+    setOpen(false);
     toast({
       title: `${member ? "Updated" : "Added"} successfully`,
       description: `Team member has been ${member ? "updated" : "added"}.`,
@@ -63,7 +67,7 @@ export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleForm
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
