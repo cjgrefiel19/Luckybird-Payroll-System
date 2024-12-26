@@ -49,10 +49,12 @@ export function AgentInvoice() {
     };
 
     setPayPeriods((prev) => [...prev, newPayPeriod]);
+    setSelectedPayPeriod(newPayPeriod.id); // Add this line to select the newly created period
     toast({
       title: "Success",
       description: "Pay period saved successfully",
     });
+    console.log('New pay period saved:', newPayPeriod); // Add debug log
   };
 
   const handleDeletePayPeriod = (id: string) => {
