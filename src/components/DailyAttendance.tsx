@@ -1,123 +1,73 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { AttendanceForm } from "./AttendanceForm";
 import { AttendanceTable } from "./AttendanceTable";
-import { AttendanceEntry, DirectoryEntry, PayPeriod } from "@/lib/types";
-import { useToast } from "@/components/ui/use-toast";
-import { isWithinInterval } from "date-fns";
-import { TEAM_MEMBERS } from "@/lib/constants";
 import { AttendanceHeader } from "./attendance/AttendanceHeader";
-import html2pdf from "html2pdf.js";
+import { useAttendanceState } from "./attendance/AttendanceState";
+import { useAttendanceActions } from "./attendance/AttendanceActions";
+import { supabase } from "@/integrations/supabase/client";
+import { isWithinInterval } from "date-fns";
+import { useToast } from "./ui/use-toast";
 
 export function DailyAttendance() {
-  const [entries, setEntries] = useState<AttendanceEntry[]>([]);
-  const [editingEntry, setEditingEntry] = useState<AttendanceEntry | null>(null);
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [selectedAgent, setSelectedAgent] = useState<string>("all");
-  const [directoryData, setDirectoryData] = useState<DirectoryEntry[]>([]);
-  const [payPeriods, setPayPeriods] = useState<PayPeriod[]>([]);
-  const [selectedPayPeriod, setSelectedPayPeriod] = useState<string | null>(null);
+  const {
+    entries,
+    setEntries,
+    editingEntry,
+    setEditingEntry,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    selectedAgent,
+    setSelectedAgent,
+    directoryData,
+    payPeriods,
+    setPayPeriods,
+    selectedPayPeriod,
+    setSelectedPayPeriod,
+  } = useAttendanceState();
+
+  const { handleSavePayPeriod, handleDeletePayPeriod, handleExport } = useAttendanceActions();
   const { toast } = useToast();
 
-  // Load directory data and team members
+  // Fetch entries from Supabase
   useEffect(() => {
-    const savedDirectory = localStorage.getItem('directoryData');
-    if (savedDirectory) {
-      const parsedDirectory = JSON.parse(savedDirectory);
-      setDirectoryData(parsedDirectory);
-    }
-
-    // Add team members to directory if they don't exist
-    const teamMemberNames = TEAM_MEMBERS.map(member => ({
-      name: member.name,
-      position: member.position || 'Agent'
-    }));
-    setDirectoryData(prevData => {
-      const existingNames = new Set(prevData.map(d => d.name));
-      const newMembers = teamMemberNames.filter(member => !existingNames.has(member.name));
-      return [...prevData, ...newMembers];
-    });
-  }, []);
-
-  // Load pay periods from localStorage
-  useEffect(() => {
-    const savedPayPeriods = localStorage.getItem('payPeriods');
-    if (savedPayPeriods) {
+    const fetchEntries = async () => {
       try {
-        const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
-          ...period,
-          startDate: new Date(period.startDate),
-          endDate: new Date(period.endDate),
+        const { data, error } = await supabase
+          .from('time_entries')
+          .select('*');
+
+        if (error) throw error;
+
+        const transformedEntries = data.map(entry => ({
+          date: new Date(entry.date),
+          agentName: entry.agent_name,
+          timeIn: entry.time_in,
+          timeOut: entry.time_out,
+          totalHours: entry.total_working_hours,
+          hourlyRate: entry.hourly_rate,
+          shiftType: entry.shift_type as any,
+          otRate: 0,
+          otPay: entry.ot_pay,
+          dailyEarnings: entry.daily_earnings,
         }));
-        setPayPeriods(parsed);
-        
-        // If there's no selected period but we have pay periods, select the last one
-        if (!selectedPayPeriod && parsed.length > 0) {
-          const lastPeriod = parsed[parsed.length - 1];
-          setSelectedPayPeriod(lastPeriod.id);
-          setStartDate(lastPeriod.startDate);
-          setEndDate(lastPeriod.endDate);
-        }
+
+        setEntries(transformedEntries);
       } catch (error) {
-        console.error('Error parsing pay periods:', error);
+        console.error('Error fetching entries:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch attendance entries",
+          variant: "destructive",
+        });
       }
-    }
-  }, []);
-
-  // Load entries from localStorage on component mount
-  useEffect(() => {
-    const savedEntries = localStorage.getItem('attendanceEntries');
-    if (savedEntries) {
-      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
-        ...entry,
-        date: new Date(entry.date)
-      }));
-      setEntries(parsedEntries);
-    }
-  }, []);
-
-  // Save entries to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('attendanceEntries', JSON.stringify(entries));
-  }, [entries]);
-
-  const handleSavePayPeriod = (name: string) => {
-    if (!startDate || !endDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date range first",
-      });
-      return;
-    }
-
-    const newPayPeriod: PayPeriod = {
-      id: crypto.randomUUID(),
-      name,
-      startDate,
-      endDate,
     };
 
-    setPayPeriods((prev) => [...prev, newPayPeriod]);
-    toast({
-      title: "Success",
-      description: "Pay period saved successfully",
-    });
-  };
+    fetchEntries();
+  }, []);
 
-  const handleDeletePayPeriod = (id: string) => {
-    setPayPeriods((prev) => prev.filter((period) => period.id !== id));
-    if (selectedPayPeriod === id) {
-      setSelectedPayPeriod(null);
-      setStartDate(undefined);
-      setEndDate(undefined);
-    }
-    toast({
-      title: "Success",
-      description: "Pay period deleted successfully",
-    });
-  };
-
-  const handleSubmit = (entry: AttendanceEntry) => {
+  const handleSubmit = async (entry: any) => {
     if (editingEntry) {
       setEntries((prev) =>
         prev.map((e) => (e === editingEntry ? entry : e))
@@ -136,43 +86,33 @@ export function DailyAttendance() {
     }
   };
 
-  const handleEdit = (entry: AttendanceEntry) => {
+  const handleEdit = (entry: any) => {
     setEditingEntry(entry);
   };
 
-  const handleDelete = (entry: AttendanceEntry) => {
-    setEntries((prev) => prev.filter((e) => e !== entry));
-    toast({
-      title: "Entry Deleted",
-      description: `Attendance entry for ${entry.agentName} has been deleted.`,
-    });
-  };
+  const handleDelete = async (entry: any) => {
+    try {
+      const { error } = await supabase
+        .from('time_entries')
+        .delete()
+        .eq('date', entry.date.toISOString().split('T')[0])
+        .eq('agent_name', entry.agentName);
 
-  const handleExport = () => {
-    const element = document.getElementById('attendance-content');
-    if (!element) return;
+      if (error) throw error;
 
-    const opt = {
-      margin: [0.5, 0.5],
-      filename: `attendance-report-${startDate?.toISOString().split('T')[0]}-${endDate?.toISOString().split('T')[0]}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2,
-        letterRendering: true,
-      },
-      jsPDF: { 
-        unit: 'in', 
-        format: 'a4', 
-        orientation: 'landscape',
-      }
-    };
-
-    html2pdf().set(opt).from(element).save();
-    
-    toast({
-      title: "Success",
-      description: "Attendance report exported successfully",
-    });
+      setEntries((prev) => prev.filter((e) => e !== entry));
+      toast({
+        title: "Entry Deleted",
+        description: `Attendance entry for ${entry.agentName} has been deleted.`,
+      });
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete attendance entry",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredEntries = entries.filter((entry) => {
@@ -207,8 +147,8 @@ export function DailyAttendance() {
         onEndDateChange={setEndDate}
         onAgentChange={setSelectedAgent}
         onPayPeriodSelect={setSelectedPayPeriod}
-        onSavePayPeriod={handleSavePayPeriod}
-        onDeletePayPeriod={handleDeletePayPeriod}
+        onSavePayPeriod={(name) => handleSavePayPeriod(name, startDate, endDate, setPayPeriods)}
+        onDeletePayPeriod={(id) => handleDeletePayPeriod(id, setPayPeriods, selectedPayPeriod, setSelectedPayPeriod, setStartDate, setEndDate)}
         onExport={handleExport}
         directoryData={directoryData}
         entries={entries}
