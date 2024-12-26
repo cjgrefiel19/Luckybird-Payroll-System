@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormFields } from "@/components/attendance/AttendanceFormFields";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AttendanceEntry, ShiftType } from "@/lib/types";
+import { AttendanceEntry } from "@/lib/types";
 import { calculateTotalHours } from "@/lib/calculations";
 
 interface UseAttendanceFormProps {
@@ -25,50 +25,40 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
 
   const handleSubmit = async (values: FormFields) => {
     try {
-      console.log("Submitting form with values:", values);
-      
-      // Only fetch the hourly rate from team_schedules
-      const { data: memberData, error: memberError } = await supabase
-        .from('team_schedules')
-        .select('hourly_rate')
-        .eq('agent_name', values.agentName)
-        .maybeSingle();
-
-      if (memberError) {
-        console.error('Error fetching hourly rate:', memberError);
-        throw memberError;
-      }
-
-      if (!memberData) {
-        throw new Error('No schedule found for this agent. Please set up their schedule first.');
-      }
-
-      const hourlyRate = memberData.hourly_rate;
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
+      // Create the entry with default values
       const entry: AttendanceEntry = {
         date: values.date,
         agentName: values.agentName,
         timeIn: values.timeIn,
         timeOut: values.timeOut,
         totalHours,
-        hourlyRate,
-        shiftType: values.shiftType as ShiftType,
+        hourlyRate: 0, // Will be updated from the database
+        shiftType: values.shiftType,
         otRate: 0,
         otPay: 0,
-        dailyEarnings: totalHours * hourlyRate,
+        dailyEarnings: 0, // Will be calculated after we get the hourly rate
       };
 
-      console.log("Prepared entry:", entry);
+      // Get the hourly rate from team_schedules
+      const { data: scheduleData } = await supabase
+        .from('team_schedules')
+        .select('hourly_rate')
+        .eq('agent_name', values.agentName)
+        .maybeSingle();
 
-      // Format date for Supabase
-      const formattedDate = entry.date.toISOString().split('T')[0];
+      // Update the entry with the hourly rate and calculate earnings
+      if (scheduleData) {
+        entry.hourlyRate = scheduleData.hourly_rate;
+        entry.dailyEarnings = totalHours * entry.hourlyRate;
+      }
 
       // Save to Supabase
       const { error } = await supabase
         .from('time_entries')
         .insert({
-          date: formattedDate,
+          date: entry.date.toISOString().split('T')[0],
           agent_name: entry.agentName,
           time_in: entry.timeIn,
           time_out: entry.timeOut,
@@ -79,12 +69,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
           daily_earnings: entry.dailyEarnings
         });
 
-      if (error) {
-        console.error('Error saving to time_entries:', error);
-        throw error;
-      }
-
-      console.log("Successfully saved entry");
+      if (error) throw error;
 
       onSubmit(entry);
       if (!editingEntry) {
@@ -96,10 +81,10 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         description: "Attendance entry saved successfully",
       });
     } catch (error: any) {
-      console.error('Detailed submission error:', error);
+      console.error('Error saving entry:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save attendance entry. Please ensure all fields are filled correctly.",
+        description: error.message || "Failed to save attendance entry",
         variant: "destructive",
       });
     }
