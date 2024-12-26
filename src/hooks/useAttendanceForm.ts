@@ -27,7 +27,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
     try {
       console.log("Submitting form with values:", values);
       
-      // First, get the hourly rate
+      // Only fetch the hourly rate from team_schedules
       const { data: memberData, error: memberError } = await supabase
         .from('team_schedules')
         .select('hourly_rate')
@@ -42,8 +42,6 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
       if (!memberData) {
         throw new Error('No schedule found for this agent. Please set up their schedule first.');
       }
-
-      console.log("Retrieved member data:", memberData);
 
       const hourlyRate = memberData.hourly_rate;
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
