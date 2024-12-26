@@ -37,6 +37,21 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
       if (selectedAgentName) {
         try {
           console.log("Fetching schedule for:", selectedAgentName);
+          
+          // First, verify the table access
+          const { data: testData, error: testError } = await supabase
+            .from('team_schedules')
+            .select('*')
+            .limit(1);
+            
+          if (testError) {
+            console.error('Error accessing team_schedules table:', testError);
+            throw new Error('Cannot access team schedules table');
+          }
+          
+          console.log("Successfully accessed team_schedules table");
+          
+          // Now fetch the specific agent's schedule
           const { data, error } = await supabase
             .from('team_schedules')
             .select('*')
@@ -48,18 +63,29 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
             throw error;
           }
 
+          console.log("Schedule data received:", data);
+
           if (data) {
-            console.log("Found schedule:", data);
+            console.log("Setting form values with:", {
+              timeIn: data.time_in,
+              timeOut: data.time_out
+            });
+            
             form.setValue("timeIn", data.time_in);
             form.setValue("timeOut", data.time_out);
           } else {
-            console.log("No schedule found for agent");
+            console.log("No schedule found for agent:", selectedAgentName);
+            toast({
+              title: "No Schedule Found",
+              description: `No schedule found for ${selectedAgentName}. Please set up their schedule in the Team Schedule tab first.`,
+              variant: "warning",
+            });
           }
         } catch (error) {
-          console.error('Error fetching team schedule:', error);
+          console.error('Detailed error:', error);
           toast({
             title: "Error",
-            description: "Failed to fetch agent schedule",
+            description: "Failed to fetch agent schedule. Please try again or contact support.",
             variant: "destructive",
           });
         }
@@ -67,7 +93,7 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     };
 
     fetchTeamSchedule();
-  }, [selectedAgentName, form]);
+  }, [selectedAgentName, form, toast]);
 
   useEffect(() => {
     if (editingEntry) {
@@ -83,13 +109,20 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
 
   const handleSubmit = async (values: FormFields) => {
     try {
+      console.log("Submitting form with values:", values);
+      
       const { data: memberData, error: memberError } = await supabase
         .from('team_schedules')
         .select('hourly_rate')
         .eq('agent_name', values.agentName)
         .single();
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error fetching hourly rate:', memberError);
+        throw memberError;
+      }
+
+      console.log("Retrieved member data:", memberData);
 
       const hourlyRate = memberData.hourly_rate;
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
@@ -107,8 +140,10 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
         shiftType,
         otRate: 0,
         otPay: 0,
-        dailyEarnings: 0,
+        dailyEarnings: totalHours * hourlyRate, // Calculate daily earnings
       };
+
+      console.log("Prepared entry:", entry);
 
       // Format date for Supabase
       const formattedDate = entry.date.toISOString().split('T')[0];
@@ -128,7 +163,12 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
           daily_earnings: entry.dailyEarnings
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error saving to time_entries:', error);
+        throw error;
+      }
+
+      console.log("Successfully saved entry");
 
       onSubmit(entry);
       if (!editingEntry) {
@@ -140,10 +180,10 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
         description: "Attendance entry saved successfully",
       });
     } catch (error) {
-      console.error('Error saving attendance:', error);
+      console.error('Detailed submission error:', error);
       toast({
         title: "Error",
-        description: "Failed to save attendance entry",
+        description: "Failed to save attendance entry. Please ensure all fields are filled correctly.",
         variant: "destructive",
       });
     }
