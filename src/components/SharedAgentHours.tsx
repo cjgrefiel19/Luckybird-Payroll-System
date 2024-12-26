@@ -43,9 +43,17 @@ export function SharedAgentHours() {
         if (entriesError) throw entriesError;
 
         // Transform the data to match AttendanceEntry type
-        const transformedEntries = timeEntries.map(entry => ({
-          ...entry,
+        const transformedEntries: AttendanceEntry[] = timeEntries.map(entry => ({
           date: new Date(entry.date),
+          agentName: entry.agent_name,
+          timeIn: entry.time_in,
+          timeOut: entry.time_out,
+          totalHours: entry.total_working_hours,
+          hourlyRate: entry.hourly_rate,
+          shiftType: entry.shift_type as any,
+          otRate: 0, // Calculate if needed
+          otPay: entry.ot_pay,
+          dailyEarnings: entry.daily_earnings
         }));
 
         setEntries(transformedEntries);
@@ -58,7 +66,6 @@ export function SharedAgentHours() {
           .single();
 
         if (acceptanceError && acceptanceError.code !== 'PGRST116') {
-          // PGRST116 means no rows returned, which is fine
           throw acceptanceError;
         }
 
