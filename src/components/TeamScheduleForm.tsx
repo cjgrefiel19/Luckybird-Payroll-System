@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -21,6 +22,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { TeamMember } from "@/lib/types";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,13 +37,14 @@ const formSchema = z.object({
 
 interface TeamScheduleFormProps {
   member?: TeamMember;
-  onSubmit: (data: TeamMember) => void;
+  onSubmit: (data: TeamMember) => Promise<void>;
   trigger?: React.ReactNode;
 }
 
 export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleFormProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,13 +60,25 @@ export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleForm
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onSubmit(values as TeamMember);
-    setOpen(false);
-    toast({
-      title: `${member ? "Updated" : "Added"} successfully`,
-      description: `Team member has been ${member ? "updated" : "added"}.`,
-    });
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      setIsSubmitting(true);
+      await onSubmit(values as TeamMember);
+      setOpen(false);
+      toast({
+        title: `${member ? "Updated" : "Added"} successfully`,
+        description: `Team member has been ${member ? "updated" : "added"}.`,
+      });
+    } catch (error) {
+      console.error('Form submission error:', error);
+      toast({
+        title: "Error",
+        description: `Failed to ${member ? "update" : "add"} team member. Please try again.`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,6 +87,9 @@ export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleForm
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{member ? "Edit" : "Add"} Team Member</DialogTitle>
+          <DialogDescription>
+            Enter the team member's details below.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -174,8 +192,15 @@ export function TeamScheduleForm({ member, onSubmit, trigger }: TeamScheduleForm
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              {member ? "Update" : "Add"} Team Member
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {member ? "Updating..." : "Adding..."}
+                </>
+              ) : (
+                <>{member ? "Update" : "Add"} Team Member</>
+              )}
             </Button>
           </form>
         </Form>
