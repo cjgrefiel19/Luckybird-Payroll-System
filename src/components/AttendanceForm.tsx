@@ -33,14 +33,29 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
 
   // Auto-populate time fields when agent is selected
   useEffect(() => {
-    if (selectedAgentName) {
-      const member = teamMembers.find(m => m.name === selectedAgentName);
-      if (member) {
-        form.setValue("timeIn", member.timeIn);
-        form.setValue("timeOut", member.timeOut);
+    const fetchTeamSchedule = async () => {
+      if (selectedAgentName) {
+        try {
+          const { data, error } = await supabase
+            .from('team_schedules')
+            .select('*')
+            .eq('agent_name', selectedAgentName)
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            form.setValue("timeIn", data.time_in);
+            form.setValue("timeOut", data.time_out);
+          }
+        } catch (error) {
+          console.error('Error fetching team schedule:', error);
+        }
       }
-    }
-  }, [selectedAgentName, form, teamMembers]);
+    };
+
+    fetchTeamSchedule();
+  }, [selectedAgentName, form]);
 
   useEffect(() => {
     if (editingEntry) {
@@ -55,32 +70,31 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
   }, [editingEntry, form]);
 
   const handleSubmit = async (values: FormFields) => {
-    const member = teamMembers.find((m) => m.name === values.agentName);
-    if (!member) {
-      toast({
-        title: "Error",
-        description: "Please select a valid agent",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
-    
-    const entry: AttendanceEntry = {
-      date: values.date,
-      agentName: values.agentName,
-      timeIn: values.timeIn,
-      timeOut: values.timeOut,
-      totalHours,
-      hourlyRate: member.hourlyRate,
-      shiftType: values.shiftType as any,
-      otRate: 0,
-      otPay: 0,
-      dailyEarnings: 0,
-    };
-
     try {
+      const { data: memberData, error: memberError } = await supabase
+        .from('team_schedules')
+        .select('hourly_rate')
+        .eq('agent_name', values.agentName)
+        .single();
+
+      if (memberError) throw memberError;
+
+      const hourlyRate = memberData.hourly_rate;
+      const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
+      
+      const entry: AttendanceEntry = {
+        date: values.date,
+        agentName: values.agentName,
+        timeIn: values.timeIn,
+        timeOut: values.timeOut,
+        totalHours,
+        hourlyRate,
+        shiftType: values.shiftType as any,
+        otRate: 0,
+        otPay: 0,
+        dailyEarnings: 0,
+      };
+
       // Format date for Supabase
       const formattedDate = entry.date.toISOString().split('T')[0];
 

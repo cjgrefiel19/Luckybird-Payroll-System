@@ -5,6 +5,7 @@ import { AgentDetails } from "./agent-invoice/AgentDetails";
 import { Card, CardContent } from "./ui/card";
 import { PayPeriod } from "@/lib/types";
 import { useToast } from "./ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AgentInvoice() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -14,32 +15,38 @@ export function AgentInvoice() {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load pay periods from localStorage
+  // Load pay periods from Supabase
   useEffect(() => {
-    const savedPayPeriods = localStorage.getItem('payPeriods');
-    if (savedPayPeriods) {
+    const fetchPayPeriods = async () => {
       try {
-        const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
-          ...period,
-          startDate: new Date(period.startDate),
-          endDate: new Date(period.endDate),
+        const { data, error } = await supabase
+          .from('payroll_records')
+          .select('*');
+
+        if (error) throw error;
+
+        const transformedPeriods = data.map(record => ({
+          id: record.id,
+          name: `Pay Period ${new Date(record.start_date).toLocaleDateString()} - ${new Date(record.end_date).toLocaleDateString()}`,
+          startDate: new Date(record.start_date),
+          endDate: new Date(record.end_date),
         }));
-        setPayPeriods(parsed);
+
+        setPayPeriods(transformedPeriods);
       } catch (error) {
-        console.error('Error parsing pay periods:', error);
+        console.error('Error fetching pay periods:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load pay periods",
+          variant: "destructive",
+        });
       }
-    }
+    };
+
+    fetchPayPeriods();
   }, []);
 
-  // Save pay periods to localStorage
-  useEffect(() => {
-    if (payPeriods.length > 0) {
-      localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
-      console.log('Saved pay periods:', payPeriods); // Debug log
-    }
-  }, [payPeriods]);
-
-  const handleSavePayPeriod = (name: string) => {
+  const handleSavePayPeriod = async (name: string) => {
     if (!startDate || !endDate) {
       toast({
         title: "Error",
@@ -48,33 +55,73 @@ export function AgentInvoice() {
       return;
     }
 
-    const newPayPeriod: PayPeriod = {
-      id: crypto.randomUUID(),
-      name,
-      startDate,
-      endDate,
-    };
+    try {
+      const { data, error } = await supabase
+        .from('payroll_records')
+        .insert({
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          pay_date: new Date().toISOString().split('T')[0],
+          total_amount: 0,
+          notes: name,
+        })
+        .select()
+        .single();
 
-    setPayPeriods((prev) => [...prev, newPayPeriod]);
-    setSelectedPayPeriod(newPayPeriod.id); // Add this line to select the newly created period
-    console.log('New pay period saved:', newPayPeriod); // Add debug log
-    toast({
-      title: "Success",
-      description: "Pay period saved successfully",
-    });
+      if (error) throw error;
+
+      const newPayPeriod: PayPeriod = {
+        id: data.id,
+        name,
+        startDate,
+        endDate,
+      };
+
+      setPayPeriods(prev => [...prev, newPayPeriod]);
+      setSelectedPayPeriod(newPayPeriod.id);
+      
+      toast({
+        title: "Success",
+        description: "Pay period saved successfully",
+      });
+    } catch (error) {
+      console.error('Error saving pay period:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save pay period",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeletePayPeriod = (id: string) => {
-    setPayPeriods((prev) => prev.filter((period) => period.id !== id));
-    if (selectedPayPeriod === id) {
-      setSelectedPayPeriod(null);
-      setStartDate(undefined);
-      setEndDate(undefined);
+  const handleDeletePayPeriod = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('payroll_records')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setPayPeriods(prev => prev.filter(period => period.id !== id));
+      if (selectedPayPeriod === id) {
+        setSelectedPayPeriod(null);
+        setStartDate(undefined);
+        setEndDate(undefined);
+      }
+
+      toast({
+        title: "Success",
+        description: "Pay period deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting pay period:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete pay period",
+        variant: "destructive",
+      });
     }
-    toast({
-      title: "Success",
-      description: "Pay period deleted successfully",
-    });
   };
 
   return (

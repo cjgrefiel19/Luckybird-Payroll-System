@@ -36,7 +36,8 @@ export function DailyAttendance() {
       try {
         const { data, error } = await supabase
           .from('time_entries')
-          .select('*');
+          .select('*')
+          .order('date', { ascending: false });
 
         if (error) throw error;
 
@@ -69,14 +70,38 @@ export function DailyAttendance() {
 
   const handleSubmit = async (entry: any) => {
     if (editingEntry) {
-      setEntries((prev) =>
-        prev.map((e) => (e === editingEntry ? entry : e))
-      );
-      setEditingEntry(null);
-      toast({
-        title: "Entry Updated",
-        description: `Attendance entry for ${entry.agentName} has been updated successfully.`,
-      });
+      try {
+        const { error } = await supabase
+          .from('time_entries')
+          .update({
+            time_in: entry.timeIn,
+            time_out: entry.timeOut,
+            total_working_hours: entry.totalHours,
+            shift_type: entry.shiftType,
+            ot_pay: entry.otPay,
+            daily_earnings: entry.dailyEarnings,
+          })
+          .eq('date', entry.date.toISOString().split('T')[0])
+          .eq('agent_name', entry.agentName);
+
+        if (error) throw error;
+
+        setEntries((prev) =>
+          prev.map((e) => (e === editingEntry ? entry : e))
+        );
+        setEditingEntry(null);
+        toast({
+          title: "Entry Updated",
+          description: `Attendance entry for ${entry.agentName} has been updated successfully.`,
+        });
+      } catch (error) {
+        console.error('Error updating entry:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update attendance entry",
+          variant: "destructive",
+        });
+      }
     } else {
       setEntries((prev) => [entry, ...prev]);
       toast({
