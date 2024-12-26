@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { AgentAttendanceTable } from "./agent-invoice/AgentAttendanceTable";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, ShiftType } from "@/lib/types";
 import { format } from "date-fns";
 import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
@@ -82,14 +82,14 @@ export function SharedAgentHours() {
 
         if (entriesError) throw entriesError;
 
-        const transformedEntries = timeEntries.map(entry => ({
+        const transformedEntries: AttendanceEntry[] = timeEntries.map(entry => ({
           date: new Date(entry.date),
           agentName: entry.agent_name,
           timeIn: entry.time_in,
           timeOut: entry.time_out,
           totalHours: entry.total_working_hours,
           hourlyRate: entry.hourly_rate,
-          shiftType: entry.shift_type,
+          shiftType: entry.shift_type as ShiftType, // Cast the string to ShiftType
           otRate: 0,
           otPay: entry.ot_pay,
           dailyEarnings: entry.daily_earnings,
