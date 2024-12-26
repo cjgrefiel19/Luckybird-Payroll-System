@@ -12,7 +12,7 @@ export const useScheduleFetch = () => {
       
       const { data, error } = await supabase
         .from('team_schedules')
-        .select('*')
+        .select('time_in, time_out, hourly_rate')
         .eq('agent_name', selectedAgentName)
         .maybeSingle();
 
@@ -25,25 +25,28 @@ export const useScheduleFetch = () => {
 
       if (!data) {
         console.log("No schedule found for agent:", selectedAgentName);
+        // Only show toast once
         toast({
           title: "No Schedule Found",
           description: `No schedule found for ${selectedAgentName}. Please set up their schedule in the Team Schedule tab first.`,
           variant: "default",
+        }, {
+          // This prevents multiple toasts from appearing
+          id: `no-schedule-${selectedAgentName}`
         });
         return null;
       }
 
-      return {
-        time_in: data.time_in,
-        time_out: data.time_out,
-        hourly_rate: data.hourly_rate
-      };
+      return data;
     } catch (error) {
       console.error('Error in fetchSchedule:', error);
+      // Only show error toast once
       toast({
         title: "Error",
         description: "Failed to fetch agent schedule. Please try again.",
         variant: "destructive",
+      }, {
+        id: 'fetch-schedule-error'
       });
       return null;
     }
