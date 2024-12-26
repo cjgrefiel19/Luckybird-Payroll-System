@@ -30,12 +30,51 @@ export function calculateDailyEarnings(
   totalHours: number,
   shiftType: ShiftType
 ): number {
-  const multiplier = SHIFT_TYPES.find((st) => st.type === shiftType)?.multiplier || 1;
+  let multiplier = 1;
+
+  // Set multiplier based on shift type
+  switch (shiftType) {
+    case "Regular OT":
+      multiplier = 1.25; // 25% additional
+      break;
+    case "Rest Day OT":
+      multiplier = 1.30; // 30% additional
+      break;
+    case "Special Holidays":
+      multiplier = 1.30; // 30% additional
+      break;
+    case "Regular Holidays":
+      multiplier = 2.00; // Double pay
+      break;
+    case "Regular Shift":
+    default:
+      multiplier = 1.00; // Regular rate
+  }
+
   return hourlyRate * totalHours * multiplier;
 }
 
 export function calculateOTRate(hourlyRate: number, shiftType: ShiftType): number {
-  const multiplier = SHIFT_TYPES.find((st) => st.type === shiftType)?.multiplier || 1;
+  let multiplier = 1;
+
+  // Set OT rate multiplier based on shift type
+  switch (shiftType) {
+    case "Regular OT":
+      multiplier = 1.25;
+      break;
+    case "Rest Day OT":
+      multiplier = 1.30;
+      break;
+    case "Special Holidays":
+      multiplier = 1.30;
+      break;
+    case "Regular Holidays":
+      multiplier = 2.00;
+      break;
+    default:
+      multiplier = 1.00;
+  }
+
   return hourlyRate * multiplier;
 }
 

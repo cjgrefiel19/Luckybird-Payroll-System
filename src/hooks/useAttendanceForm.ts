@@ -4,7 +4,7 @@ import { formSchema, FormFields } from "@/components/attendance/AttendanceFormFi
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AttendanceEntry, ShiftType } from "@/lib/types";
-import { calculateTotalHours } from "@/lib/calculations";
+import { calculateTotalHours, calculateDailyEarnings } from "@/lib/calculations";
 
 interface UseAttendanceFormProps {
   onSubmit: (data: AttendanceEntry) => void;
@@ -34,7 +34,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         timeIn: values.timeIn,
         timeOut: values.timeOut,
         totalHours,
-        hourlyRate: 0,
+        hourlyRate: 0, // Will be updated with actual rate from team_schedules
         shiftType: values.shiftType as ShiftType,
         otRate: 0,
         otPay: 0,
@@ -51,7 +51,11 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
       // Update hourly rate and calculate earnings
       if (scheduleData) {
         entry.hourlyRate = scheduleData.hourly_rate;
-        entry.dailyEarnings = totalHours * entry.hourlyRate;
+        entry.dailyEarnings = calculateDailyEarnings(
+          entry.hourlyRate,
+          entry.totalHours,
+          entry.shiftType
+        );
       }
 
       // Save to Supabase without any auth checks
