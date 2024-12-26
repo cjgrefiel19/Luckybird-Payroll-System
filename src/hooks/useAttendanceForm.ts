@@ -27,7 +27,24 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
     try {
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
-      // Create the entry with default values
+      // Validate shift type
+      const validShiftTypes: ShiftType[] = [
+        "Regular Shift",
+        "Regular OT",
+        "Rest Day OT",
+        "Special Holidays",
+        "Regular Holidays",
+        "Paid Leave",
+        "Paid SL",
+        "UnPaid Leave",
+        "UnPaid SL"
+      ];
+
+      if (!validShiftTypes.includes(values.shiftType as ShiftType)) {
+        throw new Error(`Invalid shift type: ${values.shiftType}`);
+      }
+
+      // Create entry with validated shift type
       const entry: AttendanceEntry = {
         date: values.date,
         agentName: values.agentName,
@@ -49,7 +66,8 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         .maybeSingle();
 
       if (scheduleError) {
-        throw scheduleError;
+        console.error('Schedule fetch error:', scheduleError);
+        throw new Error('Failed to fetch schedule data');
       }
 
       // Update hourly rate and calculate earnings
@@ -74,7 +92,8 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         });
 
       if (insertError) {
-        throw insertError;
+        console.error('Insert error:', insertError);
+        throw new Error('Failed to save attendance entry');
       }
 
       onSubmit(entry);
