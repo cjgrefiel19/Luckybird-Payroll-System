@@ -18,18 +18,25 @@ export function AgentInvoice() {
   useEffect(() => {
     const savedPayPeriods = localStorage.getItem('payPeriods');
     if (savedPayPeriods) {
-      const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
-        ...period,
-        startDate: new Date(period.startDate),
-        endDate: new Date(period.endDate),
-      }));
-      setPayPeriods(parsed);
+      try {
+        const parsed = JSON.parse(savedPayPeriods).map((period: any) => ({
+          ...period,
+          startDate: new Date(period.startDate),
+          endDate: new Date(period.endDate),
+        }));
+        setPayPeriods(parsed);
+      } catch (error) {
+        console.error('Error parsing pay periods:', error);
+      }
     }
   }, []);
 
   // Save pay periods to localStorage
   useEffect(() => {
-    localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
+    if (payPeriods.length > 0) {
+      localStorage.setItem('payPeriods', JSON.stringify(payPeriods));
+      console.log('Saved pay periods:', payPeriods); // Debug log
+    }
   }, [payPeriods]);
 
   const handleSavePayPeriod = (name: string) => {
@@ -50,11 +57,11 @@ export function AgentInvoice() {
 
     setPayPeriods((prev) => [...prev, newPayPeriod]);
     setSelectedPayPeriod(newPayPeriod.id); // Add this line to select the newly created period
+    console.log('New pay period saved:', newPayPeriod); // Add debug log
     toast({
       title: "Success",
       description: "Pay period saved successfully",
     });
-    console.log('New pay period saved:', newPayPeriod); // Add debug log
   };
 
   const handleDeletePayPeriod = (id: string) => {
