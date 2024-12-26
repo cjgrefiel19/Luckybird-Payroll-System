@@ -78,7 +78,7 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
             toast({
               title: "No Schedule Found",
               description: `No schedule found for ${selectedAgentName}. Please set up their schedule in the Team Schedule tab first.`,
-              variant: "warning",
+              variant: "default", // Changed from "warning" to "default"
             });
           }
         } catch (error) {
