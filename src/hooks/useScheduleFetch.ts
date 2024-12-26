@@ -25,14 +25,11 @@ export const useScheduleFetch = () => {
 
       if (!data) {
         console.log("No schedule found for agent:", selectedAgentName);
-        // Only show toast once
         toast({
+          id: `no-schedule-${selectedAgentName}`,
           title: "No Schedule Found",
           description: `No schedule found for ${selectedAgentName}. Please set up their schedule in the Team Schedule tab first.`,
           variant: "default",
-        }, {
-          // This prevents multiple toasts from appearing
-          id: `no-schedule-${selectedAgentName}`
         });
         return null;
       }
@@ -40,13 +37,11 @@ export const useScheduleFetch = () => {
       return data;
     } catch (error) {
       console.error('Error in fetchSchedule:', error);
-      // Only show error toast once
       toast({
+        id: 'fetch-schedule-error',
         title: "Error",
         description: "Failed to fetch agent schedule. Please try again.",
         variant: "destructive",
-      }, {
-        id: 'fetch-schedule-error'
       });
       return null;
     }
