@@ -27,38 +27,44 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
     try {
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
-      // Create entry with validated shift type
+      // Get the hourly rate from team_schedules first
+      const { data: scheduleData, error: scheduleError } = await supabase
+        .from('team_schedules')
+        .select('hourly_rate')
+        .eq('agent_name', values.agentName)
+        .maybeSingle();
+
+      if (scheduleError) {
+        console.error('Error fetching schedule:', scheduleError);
+        throw new Error('Failed to fetch agent schedule');
+      }
+
+      if (!scheduleData) {
+        throw new Error('No schedule found for this agent');
+      }
+
+      const hourlyRate = scheduleData.hourly_rate;
+      const dailyEarnings = calculateDailyEarnings(
+        hourlyRate,
+        totalHours,
+        values.shiftType as ShiftType
+      );
+
+      // Create entry with all calculated values
       const entry: AttendanceEntry = {
         date: values.date,
         agentName: values.agentName,
         timeIn: values.timeIn,
         timeOut: values.timeOut,
         totalHours,
-        hourlyRate: 0, // Will be updated with actual rate from team_schedules
+        hourlyRate,
         shiftType: values.shiftType as ShiftType,
         otRate: 0,
         otPay: 0,
-        dailyEarnings: 0,
+        dailyEarnings,
       };
 
-      // Get the hourly rate from team_schedules
-      const { data: scheduleData } = await supabase
-        .from('team_schedules')
-        .select('hourly_rate')
-        .eq('agent_name', values.agentName)
-        .maybeSingle();
-
-      // Update hourly rate and calculate earnings
-      if (scheduleData) {
-        entry.hourlyRate = scheduleData.hourly_rate;
-        entry.dailyEarnings = calculateDailyEarnings(
-          entry.hourlyRate,
-          entry.totalHours,
-          entry.shiftType
-        );
-      }
-
-      // Save to Supabase without any auth checks
+      // Save to Supabase with the calculated daily earnings
       const { error: insertError } = await supabase
         .from('time_entries')
         .insert({
