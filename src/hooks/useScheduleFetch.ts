@@ -12,7 +12,7 @@ export const useScheduleFetch = () => {
       
       const { data, error } = await supabase
         .from('team_schedules')
-        .select('time_in, time_out, hourly_rate')
+        .select('*')
         .eq('agent_name', selectedAgentName)
         .maybeSingle();
 
@@ -33,7 +33,16 @@ export const useScheduleFetch = () => {
         return null;
       }
 
-      return data;
+      // Map database fields to camelCase for frontend
+      return {
+        time_in: data.time_in,
+        time_out: data.time_out,
+        hourly_rate: data.hourly_rate,
+        workdays: data.workdays,
+        restdays: data.restdays,
+        monthly_rate: data.monthly_rate
+      };
+
     } catch (error) {
       console.error('Error in fetchSchedule:', error);
       toast({
