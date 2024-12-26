@@ -1,4 +1,4 @@
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useScheduleFetch = () => {
@@ -26,7 +26,6 @@ export const useScheduleFetch = () => {
       if (!data) {
         console.log("No schedule found for agent:", selectedAgentName);
         toast({
-          id: `no-schedule-${selectedAgentName}`,
           title: "No Schedule Found",
           description: `No schedule found for ${selectedAgentName}. Please set up their schedule in the Team Schedule tab first.`,
           variant: "default",
@@ -38,7 +37,6 @@ export const useScheduleFetch = () => {
     } catch (error) {
       console.error('Error in fetchSchedule:', error);
       toast({
-        id: 'fetch-schedule-error',
         title: "Error",
         description: "Failed to fetch agent schedule. Please try again.",
         variant: "destructive",
