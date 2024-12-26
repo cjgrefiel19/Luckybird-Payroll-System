@@ -34,28 +34,32 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         timeIn: values.timeIn,
         timeOut: values.timeOut,
         totalHours,
-        hourlyRate: 0, // Will be updated from the database
-        shiftType: values.shiftType as ShiftType, // Cast the string to ShiftType
+        hourlyRate: 0,
+        shiftType: values.shiftType as ShiftType,
         otRate: 0,
         otPay: 0,
-        dailyEarnings: 0, // Will be calculated after we get the hourly rate
+        dailyEarnings: 0,
       };
 
       // Get the hourly rate from team_schedules
-      const { data: scheduleData } = await supabase
+      const { data: scheduleData, error: scheduleError } = await supabase
         .from('team_schedules')
         .select('hourly_rate')
         .eq('agent_name', values.agentName)
         .maybeSingle();
 
-      // Update the entry with the hourly rate and calculate earnings
+      if (scheduleError) {
+        throw scheduleError;
+      }
+
+      // Update hourly rate and calculate earnings
       if (scheduleData) {
         entry.hourlyRate = scheduleData.hourly_rate;
         entry.dailyEarnings = totalHours * entry.hourlyRate;
       }
 
       // Save to Supabase
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('time_entries')
         .insert({
           date: entry.date.toISOString().split('T')[0],
@@ -69,7 +73,9 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
           daily_earnings: entry.dailyEarnings
         });
 
-      if (error) throw error;
+      if (insertError) {
+        throw insertError;
+      }
 
       onSubmit(entry);
       if (!editingEntry) {
