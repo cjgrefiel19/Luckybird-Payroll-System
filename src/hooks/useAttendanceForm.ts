@@ -26,6 +26,29 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
   const handleSubmit = async (values: FormFields) => {
     try {
       console.log("Starting form submission with values:", values);
+      
+      // First, get the current user's profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('Profile fetch error:', profileError);
+        throw new Error('Failed to fetch user profile');
+      }
+
+      // Ensure the agent name matches the user's full name
+      if (values.agentName !== profile.full_name) {
+        throw new Error('You can only submit time entries for yourself');
+      }
+
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
       // Validate shift type
@@ -62,28 +85,28 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
 
       console.log("Fetching schedule data for agent:", values.agentName);
       
-      // Get the hourly rate from team_schedules using a single query
-      const scheduleResponse = await supabase
+      // Get the hourly rate from team_schedules
+      const { data: scheduleData, error: scheduleError } = await supabase
         .from('team_schedules')
         .select('hourly_rate')
         .eq('agent_name', values.agentName)
         .maybeSingle();
 
-      if (scheduleResponse.error) {
-        console.error('Schedule fetch error:', scheduleResponse.error);
+      if (scheduleError) {
+        console.error('Schedule fetch error:', scheduleError);
         throw new Error('Failed to fetch schedule data');
       }
 
       // Update hourly rate and calculate earnings
-      if (scheduleResponse.data) {
-        entry.hourlyRate = scheduleResponse.data.hourly_rate;
+      if (scheduleData) {
+        entry.hourlyRate = scheduleData.hourly_rate;
         entry.dailyEarnings = totalHours * entry.hourlyRate;
       }
 
       console.log("Saving time entry:", entry);
 
-      // Save to Supabase using a single query
-      const insertResponse = await supabase
+      // Save to Supabase
+      const { error: insertError } = await supabase
         .from('time_entries')
         .insert({
           date: entry.date.toISOString().split('T')[0],
@@ -97,8 +120,8 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
           daily_earnings: entry.dailyEarnings
         });
 
-      if (insertResponse.error) {
-        console.error('Insert error:', insertResponse.error);
+      if (insertError) {
+        console.error('Insert error:', insertError);
         throw new Error('Failed to save attendance entry');
       }
 
