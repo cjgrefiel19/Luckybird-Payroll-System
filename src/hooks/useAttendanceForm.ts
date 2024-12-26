@@ -27,15 +27,20 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
     try {
       console.log("Submitting form with values:", values);
       
+      // First, get the hourly rate
       const { data: memberData, error: memberError } = await supabase
         .from('team_schedules')
         .select('hourly_rate')
         .eq('agent_name', values.agentName)
-        .single();
+        .maybeSingle();
 
       if (memberError) {
         console.error('Error fetching hourly rate:', memberError);
         throw memberError;
+      }
+
+      if (!memberData) {
+        throw new Error('No schedule found for this agent. Please set up their schedule first.');
       }
 
       console.log("Retrieved member data:", memberData);
@@ -92,11 +97,11 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         title: "Success",
         description: "Attendance entry saved successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Detailed submission error:', error);
       toast({
         title: "Error",
-        description: "Failed to save attendance entry. Please ensure all fields are filled correctly.",
+        description: error.message || "Failed to save attendance entry. Please ensure all fields are filled correctly.",
         variant: "destructive",
       });
     }
