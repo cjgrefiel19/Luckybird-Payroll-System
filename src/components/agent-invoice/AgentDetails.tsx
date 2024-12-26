@@ -7,6 +7,7 @@ import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AttendanceEntry } from "@/lib/types";
 import { Input } from "../ui/input";
 import { Link, Copy } from "lucide-react";
+import { generateShareableLink } from "@/utils/shareLinks";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AgentDetailsProps {
@@ -64,7 +65,7 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
     fetchEntries();
   }, [agentName, startDate, endDate, toast]);
 
-  const handleGenerateLink = () => {
+  const handleGenerateLink = async () => {
     if (!startDate || !endDate) {
       toast({
         title: "Error",
@@ -74,16 +75,21 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
       return;
     }
 
-    const encodedAgentInfo = btoa(`${agentName}|${startDate.toISOString()}|${endDate.toISOString()}`);
-    const sharedUrl = `/shared/agent/${encodedAgentInfo}`;
-    const baseUrl = window.location.origin;
-    const fullUrl = baseUrl + sharedUrl;
-    setGeneratedLink(fullUrl);
-
-    toast({
-      title: "Success",
-      description: "Shareable link generated successfully",
-    });
+    const result = await generateShareableLink(agentName, startDate, endDate);
+    
+    if (result.success) {
+      setGeneratedLink(result.url);
+      toast({
+        title: "Success",
+        description: "Shareable link generated successfully",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to generate link",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCopyLink = () => {
