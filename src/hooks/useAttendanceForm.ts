@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema, FormFields } from "@/components/attendance/AttendanceFormFields";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AttendanceEntry } from "@/lib/types";
+import { AttendanceEntry, ShiftType } from "@/lib/types";
 import { calculateTotalHours } from "@/lib/calculations";
 
 interface UseAttendanceFormProps {
@@ -35,7 +35,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         timeOut: values.timeOut,
         totalHours,
         hourlyRate: 0, // Will be updated from the database
-        shiftType: values.shiftType,
+        shiftType: values.shiftType as ShiftType, // Cast the string to ShiftType
         otRate: 0,
         otPay: 0,
         dailyEarnings: 0, // Will be calculated after we get the hourly rate
