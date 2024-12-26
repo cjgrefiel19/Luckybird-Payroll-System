@@ -10,6 +10,7 @@ import { AgentSummaryCards } from "./agent-invoice/AgentSummaryCards";
 import { InvoiceHeader } from "./agent-invoice/InvoiceHeader";
 import { InvoiceActions } from "./agent-invoice/InvoiceActions";
 import html2pdf from 'html2pdf.js';
+import { supabase } from "@/integrations/supabase/client";
 
 export function SharedAgentHours() {
   const { agentId } = useParams();
@@ -23,51 +24,85 @@ export function SharedAgentHours() {
   useEffect(() => {
     if (!agentId) return;
 
-    // Decode agent info from ID
-    const [name, start, end] = atob(agentId).split('|');
-    setAgentName(name);
-    setStartDate(new Date(start));
-    setEndDate(new Date(end));
+    const loadData = async () => {
+      try {
+        // Decode agent info from ID
+        const [name, start, end] = atob(agentId).split('|');
+        setAgentName(name);
+        setStartDate(new Date(start));
+        setEndDate(new Date(end));
 
-    // Load entries for this agent
-    const savedEntries = localStorage.getItem('attendanceEntries');
-    if (savedEntries) {
-      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
-        ...entry,
-        date: new Date(entry.date),
-      }));
+        // Fetch time entries from Supabase
+        const { data: timeEntries, error: entriesError } = await supabase
+          .from('time_entries')
+          .select('*')
+          .eq('agent_name', name)
+          .gte('date', start)
+          .lte('date', end);
 
-      // Filter entries for this agent and date range
-      const filteredEntries = parsedEntries.filter((entry: AttendanceEntry) => {
-        const entryDate = new Date(entry.date);
-        return (
-          entry.agentName === name &&
-          entryDate >= new Date(start) &&
-          entryDate <= new Date(end)
-        );
-      });
+        if (entriesError) throw entriesError;
 
-      setEntries(filteredEntries);
-    }
+        // Transform the data to match AttendanceEntry type
+        const transformedEntries = timeEntries.map(entry => ({
+          ...entry,
+          date: new Date(entry.date),
+        }));
 
-    // Check if already accepted
-    const acceptanceKey = `invoice-acceptance-${agentId}`;
-    const savedAcceptance = localStorage.getItem(acceptanceKey);
-    if (savedAcceptance) {
+        setEntries(transformedEntries);
+
+        // Check acceptance status
+        const { data: acceptanceData, error: acceptanceError } = await supabase
+          .from('invoice_acceptance')
+          .select('*')
+          .eq('agent_name', name)
+          .single();
+
+        if (acceptanceError && acceptanceError.code !== 'PGRST116') {
+          // PGRST116 means no rows returned, which is fine
+          throw acceptanceError;
+        }
+
+        setAccepted(!!acceptanceData?.accepted_at);
+
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load invoice data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadData();
+  }, [agentId, toast]);
+
+  const handleAccept = async () => {
+    if (!agentId || !agentName) return;
+    
+    try {
+      const { error } = await supabase
+        .from('invoice_acceptance')
+        .upsert({
+          agent_name: agentName,
+          accepted_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+      
       setAccepted(true);
+      toast({
+        title: "Invoice Accepted",
+        description: "You have successfully accepted this invoice.",
+      });
+    } catch (error) {
+      console.error('Error accepting invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept invoice",
+        variant: "destructive",
+      });
     }
-  }, [agentId]);
-
-  const handleAccept = () => {
-    if (!agentId) return;
-    
-    setAccepted(true);
-    localStorage.setItem(`invoice-acceptance-${agentId}`, 'true');
-    
-    toast({
-      title: "Invoice Accepted",
-      description: "You have successfully accepted this invoice.",
-    });
   };
 
   const handleDownloadPDF = () => {
