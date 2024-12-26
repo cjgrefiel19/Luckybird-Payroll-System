@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { AttendanceEntry, TeamMember } from "@/lib/types";
+import { AttendanceEntry, TeamMember, ShiftType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { calculateTotalHours } from "@/lib/calculations";
@@ -36,20 +36,32 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     const fetchTeamSchedule = async () => {
       if (selectedAgentName) {
         try {
+          console.log("Fetching schedule for:", selectedAgentName);
           const { data, error } = await supabase
             .from('team_schedules')
             .select('*')
             .eq('agent_name', selectedAgentName)
             .single();
 
-          if (error) throw error;
+          if (error) {
+            console.error('Error fetching team schedule:', error);
+            throw error;
+          }
 
           if (data) {
+            console.log("Found schedule:", data);
             form.setValue("timeIn", data.time_in);
             form.setValue("timeOut", data.time_out);
+          } else {
+            console.log("No schedule found for agent");
           }
         } catch (error) {
           console.error('Error fetching team schedule:', error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch agent schedule",
+            variant: "destructive",
+          });
         }
       }
     };
@@ -82,6 +94,9 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
       const hourlyRate = memberData.hourly_rate;
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
+      // Ensure shiftType is cast to ShiftType
+      const shiftType = values.shiftType as ShiftType;
+      
       const entry: AttendanceEntry = {
         date: values.date,
         agentName: values.agentName,
@@ -89,7 +104,7 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
         timeOut: values.timeOut,
         totalHours,
         hourlyRate,
-        shiftType: values.shiftType as any,
+        shiftType,
         otRate: 0,
         otPay: 0,
         dailyEarnings: 0,
