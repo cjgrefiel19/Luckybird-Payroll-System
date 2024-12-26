@@ -8,6 +8,7 @@ import { AttendanceFormFields, formSchema, FormFields } from "./attendance/Atten
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { TEAM_MEMBERS } from "@/lib/constants";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AttendanceFormProps {
   onSubmit: (data: AttendanceEntry) => void;
@@ -53,7 +54,7 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     }
   }, [editingEntry, form]);
 
-  const handleSubmit = (values: FormFields) => {
+  const handleSubmit = async (values: FormFields) => {
     const member = teamMembers.find((m) => m.name === values.agentName);
     if (!member) {
       toast({
@@ -79,9 +80,40 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
       dailyEarnings: 0,
     };
 
-    onSubmit(entry);
-    if (!editingEntry) {
-      form.reset();
+    try {
+      // Save to Supabase
+      const { error } = await supabase
+        .from('time_entries')
+        .insert({
+          date: entry.date,
+          agent_name: entry.agentName,
+          time_in: entry.timeIn,
+          time_out: entry.timeOut,
+          total_working_hours: entry.totalHours,
+          hourly_rate: entry.hourlyRate,
+          shift_type: entry.shiftType,
+          ot_pay: entry.otPay,
+          daily_earnings: entry.dailyEarnings
+        });
+
+      if (error) throw error;
+
+      onSubmit(entry);
+      if (!editingEntry) {
+        form.reset();
+      }
+
+      toast({
+        title: "Success",
+        description: "Attendance entry saved successfully",
+      });
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save attendance entry",
+        variant: "destructive",
+      });
     }
   };
 

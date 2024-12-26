@@ -8,6 +8,7 @@ import { AttendanceEntry } from "@/lib/types";
 import { Input } from "../ui/input";
 import { Link, Copy } from "lucide-react";
 import { isWithinInterval } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AgentDetailsProps {
   agentName: string;
@@ -21,24 +22,45 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
   const { toast } = useToast();
 
   useEffect(() => {
-    const savedEntries = localStorage.getItem('attendanceEntries');
-    if (savedEntries && startDate && endDate) {
-      const parsedEntries = JSON.parse(savedEntries).map((entry: any) => ({
-        ...entry,
-        date: new Date(entry.date),
-      }));
+    const fetchEntries = async () => {
+      if (!startDate || !endDate || !agentName) return;
 
-      const filteredEntries = parsedEntries.filter((entry: AttendanceEntry) => {
-        const entryDate = new Date(entry.date);
-        return (
-          entry.agentName === agentName &&
-          isWithinInterval(entryDate, { start: startDate, end: endDate })
-        );
-      });
+      try {
+        const { data, error } = await supabase
+          .from('time_entries')
+          .select('*')
+          .eq('agent_name', agentName)
+          .gte('date', startDate.toISOString())
+          .lte('date', endDate.toISOString());
 
-      setEntries(filteredEntries);
-    }
-  }, [agentName, startDate, endDate]);
+        if (error) throw error;
+
+        const transformedEntries: AttendanceEntry[] = (data || []).map(entry => ({
+          date: new Date(entry.date),
+          agentName: entry.agent_name,
+          timeIn: entry.time_in,
+          timeOut: entry.time_out,
+          totalHours: entry.total_working_hours,
+          hourlyRate: entry.hourly_rate,
+          shiftType: entry.shift_type as any,
+          otRate: 0,
+          otPay: entry.ot_pay,
+          dailyEarnings: entry.daily_earnings
+        }));
+
+        setEntries(transformedEntries);
+      } catch (error) {
+        console.error('Error fetching entries:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch attendance entries",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchEntries();
+  }, [agentName, startDate, endDate, toast]);
 
   const handleGenerateLink = () => {
     if (!startDate || !endDate) {
