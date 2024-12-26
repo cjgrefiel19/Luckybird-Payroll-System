@@ -14,8 +14,8 @@ import { TeamMember } from "@/lib/types";
 
 interface TeamScheduleTableProps {
   members: TeamMember[];
-  onEdit: (data: TeamMember, index: number) => void;
-  onDelete: (index: number) => void;
+  onEdit: (data: TeamMember, index: number) => Promise<void>;
+  onDelete: (index: number) => Promise<void>;
 }
 
 export function TeamScheduleTable({ members, onEdit, onDelete }: TeamScheduleTableProps) {
