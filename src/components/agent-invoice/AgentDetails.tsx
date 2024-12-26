@@ -7,7 +7,6 @@ import { AgentSummaryCards } from "./AgentSummaryCards";
 import { AttendanceEntry } from "@/lib/types";
 import { Input } from "../ui/input";
 import { Link, Copy } from "lucide-react";
-import { isWithinInterval } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AgentDetailsProps {
@@ -26,12 +25,15 @@ export function AgentDetails({ agentName, startDate, endDate }: AgentDetailsProp
       if (!startDate || !endDate || !agentName) return;
 
       try {
+        const formattedStartDate = startDate.toISOString().split('T')[0];
+        const formattedEndDate = endDate.toISOString().split('T')[0];
+
         const { data, error } = await supabase
           .from('time_entries')
           .select('*')
           .eq('agent_name', agentName)
-          .gte('date', startDate.toISOString())
-          .lte('date', endDate.toISOString());
+          .gte('date', formattedStartDate)
+          .lte('date', formattedEndDate);
 
         if (error) throw error;
 

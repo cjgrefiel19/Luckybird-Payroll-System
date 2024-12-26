@@ -81,11 +81,14 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
     };
 
     try {
+      // Format date for Supabase
+      const formattedDate = entry.date.toISOString().split('T')[0];
+
       // Save to Supabase
       const { error } = await supabase
         .from('time_entries')
         .insert({
-          date: entry.date,
+          date: formattedDate,
           agent_name: entry.agentName,
           time_in: entry.timeIn,
           time_out: entry.timeOut,
