@@ -23,8 +23,13 @@ export function AttendanceForm({ onSubmit, editingEntry }: AttendanceFormProps) 
   // Auto-populate time fields when agent is selected
   useEffect(() => {
     const updateSchedule = async () => {
+      if (!selectedAgentName) return;
+      
+      console.log("Fetching schedule for agent:", selectedAgentName);
       const schedule = await fetchSchedule(selectedAgentName);
+      
       if (schedule) {
+        console.log("Setting form values with schedule:", schedule);
         form.setValue("timeIn", schedule.time_in);
         form.setValue("timeOut", schedule.time_out);
       }

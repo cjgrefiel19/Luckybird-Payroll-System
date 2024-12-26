@@ -5,30 +5,16 @@ export const useScheduleFetch = () => {
   const { toast } = useToast();
 
   const fetchSchedule = async (selectedAgentName: string | undefined) => {
-    if (!selectedAgentName) return;
+    if (!selectedAgentName) return null;
 
     try {
       console.log("Fetching schedule for:", selectedAgentName);
       
-      // First, verify the table access
-      const { data: testData, error: testError } = await supabase
-        .from('team_schedules')
-        .select('*')
-        .limit(1);
-        
-      if (testError) {
-        console.error('Error accessing team_schedules table:', testError);
-        throw new Error('Cannot access team schedules table');
-      }
-      
-      console.log("Successfully accessed team_schedules table");
-      
-      // Now fetch the specific agent's schedule
       const { data, error } = await supabase
         .from('team_schedules')
         .select('*')
         .eq('agent_name', selectedAgentName)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching team schedule:', error);
@@ -44,14 +30,19 @@ export const useScheduleFetch = () => {
           description: `No schedule found for ${selectedAgentName}. Please set up their schedule in the Team Schedule tab first.`,
           variant: "default",
         });
+        return null;
       }
 
-      return data;
+      return {
+        time_in: data.time_in,
+        time_out: data.time_out,
+        hourly_rate: data.hourly_rate
+      };
     } catch (error) {
-      console.error('Detailed error:', error);
+      console.error('Error in fetchSchedule:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch agent schedule. Please try again or contact support.",
+        description: "Failed to fetch agent schedule. Please try again.",
         variant: "destructive",
       });
       return null;
