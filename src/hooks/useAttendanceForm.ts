@@ -25,6 +25,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
 
   const handleSubmit = async (values: FormFields) => {
     try {
+      console.log("Starting form submission with values:", values);
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
       // Validate shift type
@@ -41,6 +42,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
       ];
 
       if (!validShiftTypes.includes(values.shiftType as ShiftType)) {
+        console.error("Invalid shift type:", values.shiftType);
         throw new Error(`Invalid shift type: ${values.shiftType}`);
       }
 
@@ -58,26 +60,30 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         dailyEarnings: 0,
       };
 
-      // Get the hourly rate from team_schedules
-      const { data: scheduleData, error: scheduleError } = await supabase
+      console.log("Fetching schedule data for agent:", values.agentName);
+      
+      // Get the hourly rate from team_schedules using a single query
+      const scheduleResponse = await supabase
         .from('team_schedules')
         .select('hourly_rate')
         .eq('agent_name', values.agentName)
         .maybeSingle();
 
-      if (scheduleError) {
-        console.error('Schedule fetch error:', scheduleError);
+      if (scheduleResponse.error) {
+        console.error('Schedule fetch error:', scheduleResponse.error);
         throw new Error('Failed to fetch schedule data');
       }
 
       // Update hourly rate and calculate earnings
-      if (scheduleData) {
-        entry.hourlyRate = scheduleData.hourly_rate;
+      if (scheduleResponse.data) {
+        entry.hourlyRate = scheduleResponse.data.hourly_rate;
         entry.dailyEarnings = totalHours * entry.hourlyRate;
       }
 
-      // Save to Supabase
-      const { error: insertError } = await supabase
+      console.log("Saving time entry:", entry);
+
+      // Save to Supabase using a single query
+      const insertResponse = await supabase
         .from('time_entries')
         .insert({
           date: entry.date.toISOString().split('T')[0],
@@ -91,10 +97,12 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
           daily_earnings: entry.dailyEarnings
         });
 
-      if (insertError) {
-        console.error('Insert error:', insertError);
+      if (insertResponse.error) {
+        console.error('Insert error:', insertResponse.error);
         throw new Error('Failed to save attendance entry');
       }
+
+      console.log("Successfully saved time entry");
 
       onSubmit(entry);
       if (!editingEntry) {
@@ -106,7 +114,7 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
         description: "Attendance entry saved successfully",
       });
     } catch (error: any) {
-      console.error('Error saving entry:', error);
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to save attendance entry",
