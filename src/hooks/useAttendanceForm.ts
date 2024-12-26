@@ -27,23 +27,9 @@ export const useAttendanceForm = ({ onSubmit, editingEntry }: UseAttendanceFormP
     try {
       const totalHours = calculateTotalHours(values.timeIn, values.timeOut);
       
-      // Get the hourly rate from team_schedules first
-      const { data: scheduleData, error: scheduleError } = await supabase
-        .from('team_schedules')
-        .select('hourly_rate')
-        .eq('agent_name', values.agentName)
-        .maybeSingle();
-
-      if (scheduleError) {
-        console.error('Error fetching schedule:', scheduleError);
-        throw new Error('Failed to fetch agent schedule');
-      }
-
-      if (!scheduleData) {
-        throw new Error('No schedule found for this agent');
-      }
-
-      const hourlyRate = scheduleData.hourly_rate;
+      // Use a default hourly rate of 5.38 (or any other value you prefer)
+      const hourlyRate = 5.38;
+      
       const dailyEarnings = calculateDailyEarnings(
         hourlyRate,
         totalHours,
